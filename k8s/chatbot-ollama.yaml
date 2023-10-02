@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: chatbot-ollama
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: chatbot-ollama
+  name: chatbot-ollama
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: chatbot-ollama
+  name: chatbot-ollama
+  labels:
+    app: chatbot-ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatbot-ollama
+  template:
+    metadata:
+      labels:
+        app: chatbot-ollama
+    spec:
+      containers:
+        - name: chatbot-ollama
+          image: <docker user>/chatbot-ollama:latest
+          resources: {}
+          ports:
+            - containerPort: 3000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: chatbot-ollama
+  name: chatbot-ollama
+  labels:
+    app: chatbot-ollama
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  selector:
+    app: chatbot-ollama
+  type: ClusterIP
