@@ -2,7 +2,6 @@
   "Stop Generating": "Zatrzymaj generowanie",
   "Prompt limit is {{maxLength}} characters": "Limit prompta wynosi {{maxLength}} znaków",
   "System Prompt": "Prompt systemowy",
-  "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.": "Jesteś ChatGPT, duży model językowy wytrenowany przez OpenAI. Postępuj zgodnie z instrukcjami użytkownika. Odpowiedz za pomocą formatu markdown.",
   "Enter a prompt": "Wprowadź prompt",
   "Regenerate response": "Wygeneruj odpowiedź",
   "Sorry, there was an error.": "Przepraszam, wystąpił błąd.",
