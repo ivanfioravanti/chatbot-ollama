@@ -40,6 +40,8 @@ const handler = async (req: Request): Promise<Response> => {
             return {
               id: model.name,
               name: model.name,
+              modified_at: model.modified_at,
+              size: model.size,
             };
           }
         }

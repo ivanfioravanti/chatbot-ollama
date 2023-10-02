@@ -1,5 +1,5 @@
 import { IconExternalLink } from '@tabler/icons-react';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 
 import { useTranslation } from 'next-i18next';
 
@@ -10,20 +10,51 @@ import HomeContext from '@/pages/api/home/home.context';
 export const ModelSelect = () => {
   const { t } = useTranslation('chat');
 
+  function bytesToGB(bytes: number): string {
+    return (bytes / 1e9).toFixed(2) + ' GB';
+  }
+  
+  function timeAgo(date: Date): string {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const mins = Math.floor(diffInSeconds / 60);
+    const hours = Math.floor(mins / 60);
+    const days = Math.floor(hours / 24);
+  
+    if (days > 0) {
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    } else if (hours > 0) {
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else {
+      return `${mins} minute${mins > 1 ? 's' : ''} ago`;
+    }
+  }
+  
   const {
     state: { selectedConversation, models, defaultModelId },
     handleUpdateConversation,
     dispatch: homeDispatch,
   } = useContext(HomeContext);
 
+  const [selectedModelDetails, setSelectedModelDetails] = useState<{
+    size: string;
+    modified: string;
+  }>({ size: '', modified: '' });
+
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     selectedConversation &&
       handleUpdateConversation(selectedConversation, {
         key: 'model',
-        value: models.find(
-          (model) => model.name === e.target.value,
-        ) as OllamaModel,
+        value: models.find((model) => model.name === e.target.value) as OllamaModel,
       });
+      
+    const selectedModel = models.find((model) => model.name === e.target.value);
+    if (selectedModel) {
+      setSelectedModelDetails({
+        size: bytesToGB(selectedModel.size), 
+        modified: timeAgo(new Date(selectedModel.modified_at)),
+      });
+    }
   };
 
   return (
@@ -50,6 +81,18 @@ export const ModelSelect = () => {
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Display additional properties */}
+      <div className="mb-2 text-left text-neutral-700 dark:text-neutral-400">
+        <p className='mt-2'>
+          <span className="mr-16 inline-block">Size:</span>
+          <span className="inline-block">{selectedModelDetails.size}</span>
+        </p>
+        <p>
+          <span className="mr-8 inline-block">Modified:</span>
+          <span className="inline-block">{selectedModelDetails.modified}</span>
+        </p>
       </div>
     </div>
   );
