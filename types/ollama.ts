@@ -4,6 +4,14 @@ export interface OllamaModel {
   size: number;
 }
 
+export interface OllamaModelDetail {
+  license: string,
+  modelfile: string,
+  parameters: string,
+  template: string,
+  system: string,
+}
+
 export enum OllamaModelID {
   DEFAULTMODEL = 'llama2:latest'
 }
@@ -13,7 +21,7 @@ export const fallbackModelID = OllamaModelID.DEFAULTMODEL;
 
 export const OllamaModels: Record<OllamaModelID, OllamaModel> = {
   [OllamaModelID.DEFAULTMODEL]: {
-    name: 'llama2',
+    name: 'llama2:latest',
     modified_at: new Date(),
     size: 4000,
   },
