@@ -30,7 +30,7 @@ docker run -p 3000:3000 chatbot-ollama
 Pull from ghcr:
 
 ```bash
-docker run -e -p 3000:3000 ghcr.io/ivanfioravanti/chatbot-ollama:main
+docker run -p 3000:3000 ghcr.io/ivanfioravanti/chatbot-ollama:main
 ```
 
 ## Running Locally
