@@ -14,7 +14,14 @@ function App({ Component, pageProps }: AppProps<{}>) {
 
   return (
     <div className={inter.className}>
-      <Toaster />
+      <Toaster
+        toastOptions={{
+          style: {
+            maxWidth: 500,
+            wordBreak: 'break-all',
+          },
+        }}
+      />
       <QueryClientProvider client={queryClient}>
         <Component {...pageProps} />
       </QueryClientProvider>
