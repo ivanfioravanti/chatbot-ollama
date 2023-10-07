@@ -1,5 +1,5 @@
 import { IconExternalLink } from '@tabler/icons-react';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 
 import { useTranslation } from 'next-i18next';
 
@@ -56,6 +56,25 @@ export const ModelSelect = () => {
       });
     }
   };
+
+  useEffect(() => {
+    if (selectedConversation?.model) {
+      const model = models.find(
+        (m) => m.name === selectedConversation.model.name,
+      );
+      if (model) {
+        setSelectedModelDetails({
+          size: bytesToGB(model.size),
+          modified: timeAgo(new Date(model.modified_at)),
+        });
+      }
+    } else if (models.length > 0) {
+      setSelectedModelDetails({
+        size: bytesToGB(models[0].size),
+        modified: timeAgo(new Date(models[0].modified_at)),
+      });
+    }
+  }, [selectedConversation, models]);
 
   return (
     <div className="flex flex-col">
