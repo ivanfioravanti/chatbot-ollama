@@ -40,6 +40,7 @@ import HomeContext from './home.context';
 import { HomeInitialState, initialState } from './home.state';
 
 import { v4 as uuidv4 } from 'uuid';
+import toast from "react-hot-toast"
 
 interface Props {
   defaultModelId: OllamaModelID;
@@ -220,8 +221,16 @@ const Home = ({
   }, [defaultModelId]);
 
   // ON LOAD --------------------------------------------
-
   useEffect(() => {
+      // Check default model availability
+      const defaultModel = OllamaModels[defaultModelId];
+      if (data && !data.some(model => model.name === defaultModel.name)) {
+        toast.error("The default model set in your .env settings is not installed. Please update your .env or install the required model.", {duration:20000});
+        return;
+      }
+  }, [data]);
+
+    useEffect(() => {
     const settings = getSettings();
     if (settings.theme) {
       dispatch({
