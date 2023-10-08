@@ -13,7 +13,7 @@ export interface OllamaModelDetail {
 }
 
 export enum OllamaModelID {
-  DEFAULTMODEL = 'llama2:latest'
+  DEFAULTMODEL = 'mistral:latest'
 }
 
 // in case the `DEFAULT_MODEL` environment variable is not set or set to an unsupported model
