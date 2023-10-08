@@ -46,6 +46,13 @@ git clone https://github.com/ivanfioravanti/chatbot-ollama.git
 ```bash
 npm i
 ```
+### 3. Run Ollama server
+
+Either via the cli:
+```bash
+ollama server
+```
+or via the [desktop client](https://ollama.ai/download)
 
 ### 4. Run App
 
