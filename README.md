@@ -50,7 +50,7 @@ npm i
 
 Either via the cli:
 ```bash
-ollama server
+ollama serve
 ```
 or via the [desktop client](https://ollama.ai/download)
 
