@@ -21,7 +21,7 @@ export const fallbackModelID = OllamaModelID.DEFAULTMODEL;
 
 export const OllamaModels: Record<OllamaModelID, OllamaModel> = {
   [OllamaModelID.DEFAULTMODEL]: {
-    name: 'llama2:latest',
+    name: 'mistral:latest',
     modified_at: new Date(),
     size: 4000,
   },

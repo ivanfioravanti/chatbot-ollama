@@ -46,12 +46,15 @@ git clone https://github.com/ivanfioravanti/chatbot-ollama.git
 ```bash
 npm i
 ```
+
 ### 3. Run Ollama server
 
 Either via the cli:
+
 ```bash
 ollama serve
 ```
+
 or via the [desktop client](https://ollama.ai/download)
 
 ### 4. Run App
@@ -70,7 +73,7 @@ When deploying the application, the following environment variables can be set:
 
 | Environment Variable              | Default value                  | Description                                                                                                                               |
 | --------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| DEFAULT_MODEL                     | `llama2:latest`                | The default model to use on new conversations                                                                                             |
+| DEFAULT_MODEL                     | `mistral:latest`                | The default model to use on new conversations                                                                                             |
 | NEXT_PUBLIC_DEFAULT_SYSTEM_PROMPT | [see here](utils/app/const.ts) | The default system prompt to use on new conversations                                                                                     |
 | NEXT_PUBLIC_DEFAULT_TEMPERATURE   | 1                              | The default temperature to use on new conversations                                                                                       |
 

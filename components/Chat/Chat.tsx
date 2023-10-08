@@ -233,6 +233,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       conversations,
       selectedConversation,
       stopConversationRef,
+      homeDispatch
     ],
   );
 

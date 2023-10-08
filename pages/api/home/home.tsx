@@ -209,12 +209,12 @@ const Home = ({ defaultModelId }: Props) => {
     if (window.innerWidth < 640) {
       dispatch({ field: 'showChatbar', value: false });
     }
-  }, [selectedConversation]);
+  }, [selectedConversation, dispatch]);
 
   useEffect(() => {
     defaultModelId &&
       dispatch({ field: 'defaultModelId', value: defaultModelId });
-  }, [defaultModelId]);
+  }, [defaultModelId, dispatch]);
 
   useEffect(() => {
     const settings = getSettings();
@@ -288,7 +288,7 @@ const Home = ({ defaultModelId }: Props) => {
         },
       });
     }
-  }, [defaultModelId, dispatch]);
+  }, [defaultModelId, dispatch, conversations, t]);
 
   return (
     <HomeContext.Provider
