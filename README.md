@@ -44,7 +44,7 @@ git clone https://github.com/ivanfioravanti/chatbot-ollama.git
 ### 2. Install Dependencies
 
 ```bash
-npm i
+npm ci
 ```
 
 ### 3. Run Ollama server
