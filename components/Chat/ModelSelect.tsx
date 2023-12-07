@@ -13,14 +13,14 @@ export const ModelSelect = () => {
   function bytesToGB(bytes: number): string {
     return (bytes / 1e9).toFixed(2) + ' GB';
   }
-  
+
   function timeAgo(date: Date): string {
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     const mins = Math.floor(diffInSeconds / 60);
     const hours = Math.floor(mins / 60);
     const days = Math.floor(hours / 24);
-  
+
     if (days > 0) {
       return `${days} day${days > 1 ? 's' : ''} ago`;
     } else if (hours > 0) {
@@ -29,7 +29,7 @@ export const ModelSelect = () => {
       return `${mins} minute${mins > 1 ? 's' : ''} ago`;
     }
   }
-  
+
   const {
     state: { selectedConversation, models, defaultModelId },
     handleUpdateConversation,
@@ -47,31 +47,32 @@ export const ModelSelect = () => {
         key: 'model',
         value: models.find((model) => model.name === e.target.value) as OllamaModel,
       });
-      
+
     const selectedModel = models.find((model) => model.name === e.target.value);
     if (selectedModel) {
       setSelectedModelDetails({
-        size: bytesToGB(selectedModel.size), 
+        size: bytesToGB(selectedModel.size),
         modified: timeAgo(new Date(selectedModel.modified_at)),
       });
     }
   };
 
   useEffect(() => {
+    let model
     if (selectedConversation?.model) {
-      const model = models.find(
-        (m) => m.name === selectedConversation.model.name,
-      );
-      if (model) {
-        setSelectedModelDetails({
-          size: bytesToGB(model.size),
-          modified: timeAgo(new Date(model.modified_at)),
-        });
-      }
-    } else if (models.length > 0) {
+      model = models.find((m) => m.name === selectedConversation.model.name)
+    }
+
+    if (!model) {
+      // selectedConversation has model which is not present on the system. Select the first model
+      model = models[0]
+      selectedConversation && model && handleUpdateConversation(selectedConversation, { key: 'model', value: model });
+    }
+
+    if (model) {
       setSelectedModelDetails({
-        size: bytesToGB(models[0].size),
-        modified: timeAgo(new Date(models[0].modified_at)),
+        size: bytesToGB(model.size),
+        modified: timeAgo(new Date(model.modified_at)),
       });
     }
   }, [selectedConversation, models]);
