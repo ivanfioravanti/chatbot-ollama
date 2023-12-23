@@ -1,10 +1,54 @@
-version: '3.6'
-
+version: "3.8"
 services:
-  chatgpt:
-    build: .
-    ports:
-      - 3000:3000
+
+  chatbot:
+    image: ghcr.io/ivanfioravanti/chatbot-ollama:main
+    expose:
+     - 3000/tcp
     environment:
-      - 'DEFAULT_MODEL='
-      - 'OLLAMA_HOST='
+     - DEFAULT_MODEL=llama2
+     - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+     - ollama
+
+  ollama:
+    image: ollama/ollama
+    expose:
+     - 11434/tcp
+    command: serve
+    volumes:
+      - ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']
+              capabilities: [gpu]
+
+  curl:
+    image: curlimages/curl:latest
+    environment:
+      - MODELS="llama2 mixtral dolphin-mixtral llama2-uncensored llava"
+    command: >
+      /bin/sh -c "
+      for model in $$MODELS; do
+        curl -X POST http://ollama:11434/api/pull -d \"{\\\"name\\\": \\\"\$$model\\\"}\" && \
+        sleep 5
+      done || sleep 30
+      "
+    restart: on-failure
+    depends_on:
+      - ollama
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    environment:
+      - TUNNEL_URL=http://chatbot:3000
+    command: tunnel --no-autoupdate
+    depends_on:
+      - chatbot
+
+volumes:
+  ollama:
