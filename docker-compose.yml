@@ -23,7 +23,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['1']
+              device_ids: ['all']
               capabilities: [gpu]
 
   curl:
