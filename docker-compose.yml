@@ -2,9 +2,21 @@ version: '3.6'
 
 services:
   chatgpt:
+    container_name: chatgpt
     build: .
     ports:
       - 3000:3000
     environment:
       - 'DEFAULT_MODEL='
-      - 'OLLAMA_HOST='
+      - 'OLLAMA_HOST=http://ollama:11434'
+  ollama:
+    container_name: ollama
+    image: ollama/ollama:latest
+    ports:
+      - 11434:11434
+    volumes:
+      - ./ollama:/ollama
+    environment:
+      - 'OLLAMA_HOST=ollama:11434'
+volumes:
+  ollama:
