@@ -1,4 +1,4 @@
-version: '1.0'
+version: '3.9'
 
 services:
  test_gpu:
@@ -13,6 +13,7 @@ services:
               capabilities: [gpu]
     networks:
       - chris_evil_llms
+ 
  ollama:
     build:
       context: .
