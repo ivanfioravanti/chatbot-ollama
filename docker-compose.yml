@@ -3,7 +3,7 @@ version: '1.0'
 services:
  test_gpu:
     image: nvidia/cuda:12.3.1-base-ubuntu20.04
-    command: /bin/bash -c "nvidia-smi || echo 'Warning: You fool! GPU not configured properly'"
+    command: nvidia-smi
     deploy:
       resources:
         reservations:
@@ -11,6 +11,8 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+    networks:
+      - chris_evil_llms
  ollama:
     build:
       context: .
