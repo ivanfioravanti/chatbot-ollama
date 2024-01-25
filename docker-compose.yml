@@ -1,6 +1,16 @@
 version: '1.0'
 
 services:
+ test_gpu:
+    image: nvidia/cuda:12.3.1-base-ubuntu20.04
+    command: nvidia-smi
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
  ollama:
     build:
       context: .
@@ -16,6 +26,13 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
  chatgpt:
     build:
@@ -24,7 +41,7 @@ services:
     ports:
       - 3000:3000
     environment:
-      - 'DEFAULT_MODEL=llama2:latest'
+      - 'DEFAULT_MODEL=deepseek-coder:33b'
       - 'OLLAMA_HOST=http://ollama:11434'
     depends_on:
       - ollama
@@ -33,11 +50,14 @@ services:
 
  curl:
     image: curlimages/curl:latest
+    environment:
+      MODELS: llama2-uncensored deepseek-coder:33b wizardcoder:33b
+      OLLAMA_ENDPOINT: http://ollama:11434/api
     command: >
       /bin/sh -c "
-        for model in llama2 mistral; do
-          if ! curl -s http://ollama:11434/api/tags | grep -wq $$model; then
-            curl -X POST http://ollama:11434/api/pull -d '{\"name\": \"'$$model'\"}' && sleep 5
+        for model in $$MODELS; do
+          if ! curl -s $$OLLAMA_ENDPOINT/tags | grep -wq $$model; then
+            curl -X POST $$OLLAMA_ENDPOINT/pull -d '{\"name\": \"'$$model'\"}' && sleep 5
           fi
         done
       "
