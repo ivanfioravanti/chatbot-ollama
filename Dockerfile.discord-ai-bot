@@ -1,0 +1,10 @@
+FROM node:21
+
+WORKDIR /app
+COPY ./discord-ai-bot/ .
+
+RUN npm install
+
+USER node
+
+CMD ["npm","start"]
