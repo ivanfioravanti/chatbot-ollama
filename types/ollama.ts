@@ -23,6 +23,6 @@ export const OllamaModels: Record<OllamaModelID, OllamaModel> = {
   [OllamaModelID.DEFAULTMODEL]: {
     name: 'mistral:latest',
     modified_at: new Date(),
-    size: 4000,
+    size: 16384,
   },
 };
