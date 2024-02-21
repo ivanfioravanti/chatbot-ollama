@@ -75,7 +75,7 @@ export const ModelSelect = () => {
         modified: timeAgo(new Date(model.modified_at)),
       });
     }
-  }, [selectedConversation, models]);
+  }, [selectedConversation, handleUpdateConversation, models]);
 
   return (
     <div className="flex flex-col">
