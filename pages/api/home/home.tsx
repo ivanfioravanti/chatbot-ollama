@@ -288,7 +288,7 @@ const Home = ({ defaultModelId }: Props) => {
         },
       });
     }
-  }, [defaultModelId, conversations, dispatch, t]);
+  }, [defaultModelId, dispatch, t]);
 
   return (
     <HomeContext.Provider
