@@ -41,13 +41,19 @@ docker run -p 3000:3000 ghcr.io/ivanfioravanti/chatbot-ollama:main
 git clone https://github.com/ivanfioravanti/chatbot-ollama.git
 ```
 
-### 2. Install Dependencies
+### 2. Move to folder
+
+```bash
+cd chatbot-ollama
+```
+
+### 3. Install Dependencies
 
 ```bash
 npm ci
 ```
 
-### 3. Run Ollama server
+### 4. Run Ollama server
 
 Either via the cli:
 
@@ -57,13 +63,13 @@ ollama serve
 
 or via the [desktop client](https://ollama.ai/download)
 
-### 4. Run App
+### 5. Run App
 
 ```bash
 npm run dev
 ```
 
-### 5. Use It
+### 6. Use It
 
 You should be able to start chatting.
 
