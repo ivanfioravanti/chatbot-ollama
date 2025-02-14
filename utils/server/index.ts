@@ -58,7 +58,8 @@ export const OllamaStream = async (
       try {
         for await (const chunk of res.body as any) {
           const text = decoder.decode(chunk); 
-          const parsedData = JSON.parse(text); 
+          let parsedData = { response: '' };
+          try { parsedData = JSON.parse(text); } catch { }
           if (parsedData.response) {
             controller.enqueue(encoder.encode(parsedData.response)); 
           }
