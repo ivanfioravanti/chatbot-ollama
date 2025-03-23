@@ -91,7 +91,9 @@ export const PromptComponent = ({ prompt }: Props) => {
           setRenameValue('');
         }}
       >
-        <IconBulbFilled size={18} />
+        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-500/80 text-white">
+          <IconBulbFilled size={16} stroke={1.5} />
+        </div>
 
         <div className="relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all pr-4 text-left text-[12.5px] leading-3">
           {prompt.name}
@@ -101,11 +103,11 @@ export const PromptComponent = ({ prompt }: Props) => {
       {(isDeleting || isRenaming) && (
         <div className="absolute right-1 z-10 flex text-gray-300">
           <SidebarActionButton handleClick={handleDelete}>
-            <IconCheck size={18} />
+            <IconCheck size={18} stroke={1.5} />
           </SidebarActionButton>
 
           <SidebarActionButton handleClick={handleCancelDelete}>
-            <IconX size={18} />
+            <IconX size={18} stroke={1.5} />
           </SidebarActionButton>
         </div>
       )}
@@ -113,7 +115,7 @@ export const PromptComponent = ({ prompt }: Props) => {
       {!isDeleting && !isRenaming && (
         <div className="absolute right-1 z-10 flex text-gray-300">
           <SidebarActionButton handleClick={handleOpenDeleteModal}>
-            <IconTrash size={18} />
+            <IconTrash size={18} stroke={1.5} />
           </SidebarActionButton>
         </div>
       )}

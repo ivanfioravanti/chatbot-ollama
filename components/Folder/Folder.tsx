@@ -96,11 +96,13 @@ const Folder = ({
       <div className="relative flex items-center">
         {isRenaming ? (
           <div className="flex w-full items-center gap-3 bg-[#343541]/90 p-3">
-            {isOpen ? (
-              <IconCaretDown size={18} />
-            ) : (
-              <IconCaretRight size={18} />
-            )}
+            <div className="flex h-6 w-6 items-center justify-center">
+              {isOpen ? (
+                <IconCaretDown size={16} stroke={1.5} />
+              ) : (
+                <IconCaretRight size={16} stroke={1.5} />
+              )}
+            </div>
             <input
               className="mr-12 flex-1 overflow-hidden overflow-ellipsis border-neutral-400 bg-transparent text-left text-[12.5px] leading-3 text-white outline-none focus:border-neutral-100"
               type="text"
@@ -119,11 +121,13 @@ const Folder = ({
             onDragEnter={highlightDrop}
             onDragLeave={removeHighlight}
           >
-            {isOpen ? (
-              <IconCaretDown size={18} />
-            ) : (
-              <IconCaretRight size={18} />
-            )}
+            <div className="flex h-6 w-6 items-center justify-center text-neutral-400">
+              {isOpen ? (
+                <IconCaretDown size={16} stroke={1.5} />
+              ) : (
+                <IconCaretRight size={16} stroke={1.5} />
+              )}
+            </div>
 
             <div className="relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3">
               {currentFolder.name}
@@ -147,7 +151,7 @@ const Folder = ({
                 setIsRenaming(false);
               }}
             >
-              <IconCheck size={18} />
+              <IconCheck size={18} stroke={1.5} />
             </SidebarActionButton>
             <SidebarActionButton
               handleClick={(e) => {
@@ -156,7 +160,7 @@ const Folder = ({
                 setIsRenaming(false);
               }}
             >
-              <IconX size={18} />
+              <IconX size={18} stroke={1.5} />
             </SidebarActionButton>
           </div>
         )}
@@ -170,7 +174,7 @@ const Folder = ({
                 setRenameValue(currentFolder.name);
               }}
             >
-              <IconPencil size={18} />
+              <IconPencil size={18} stroke={1.5} />
             </SidebarActionButton>
             <SidebarActionButton
               handleClick={(e) => {
@@ -178,7 +182,7 @@ const Folder = ({
                 setIsDeleting(true);
               }}
             >
-              <IconTrash size={18} />
+              <IconTrash size={18} stroke={1.5} />
             </SidebarActionButton>
           </div>
         )}
