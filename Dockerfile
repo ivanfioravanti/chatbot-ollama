@@ -6,6 +6,8 @@ COPY package*.json ./
 # ---- Dependencies ----
 FROM base AS dependencies
 RUN npm ci
+# Install additional dependencies that might be missing
+RUN npm install rehype-mathjax --save
 
 # ---- Build ----
 FROM dependencies AS build

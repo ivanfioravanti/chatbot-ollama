@@ -19,3 +19,6 @@ export const MemoizedReactMarkdown: FC<ExtendedOptions> = memo(
     prevProps.children === nextProps.children
   )
 );
+
+// Add display name to fix ESLint error
+MemoizedReactMarkdown.displayName = 'MemoizedReactMarkdown';
