@@ -41,8 +41,31 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(JSON.stringify(json), { status: 200 });
   } catch (error) {
-    console.error(error);
-    return new Response('Error', { status: 500 });
+    console.error('Model details API error:', error);
+    
+    // Check if this is a fetch/connection error that might be related to OLLAMA_HOST setting
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return new Response(JSON.stringify({
+        error: 'Connection Error',
+        message: `Could not connect to Ollama at ${OLLAMA_HOST}`,
+        suggestion: 'If you have set the OLLAMA_HOST environment variable, try removing it or setting it to http://127.0.0.1:11434'
+      }), { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+    
+    return new Response(JSON.stringify({
+      error: 'Error fetching model details',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }), { 
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   }
 };
 

@@ -27,11 +27,31 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(stream);
   } catch (error) {
-    console.error(error);
+    console.error('Chat API error:', error);
     if (error instanceof OllamaError) {
-      return new Response('Error', { status: 500, statusText: error.message });
+      // Return a more descriptive error message to help with debugging
+      return new Response(JSON.stringify({ 
+        error: 'Ollama Error', 
+        message: error.message,
+        suggestion: error.message.includes('OLLAMA_HOST') ? 
+          'Try removing the OLLAMA_HOST environment variable or setting it to http://127.0.0.1:11434' : 
+          'Check if Ollama is running and accessible'
+      }), { 
+        status: 500, 
+        headers: {
+          'Content-Type': 'application/json'
+        } 
+      });
     } else {
-      return new Response('Error', { status: 500 });
+      return new Response(JSON.stringify({ 
+        error: 'Internal Server Error', 
+        message: error instanceof Error ? error.message : 'Unknown error'
+      }), { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        } 
+      });
     }
   }
 };
