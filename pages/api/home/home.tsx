@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { GetServerSideProps } from 'next';
 import { useTranslation } from 'next-i18next';
@@ -69,7 +69,9 @@ const Home = ({ defaultModelId }: Props) => {
 
   const stopConversationRef = useRef<boolean>(false);
 
-  const { data, error, refetch } = useQuery(['GetModels'], () => getModels(), {
+  const { data, error, refetch } = useQuery({
+    queryKey: ['GetModels'],
+    queryFn: () => getModels(),
     enabled: true,
     refetchOnMount: false,
   });

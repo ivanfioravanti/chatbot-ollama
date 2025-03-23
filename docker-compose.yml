@@ -8,3 +8,4 @@ services:
     environment:
       - 'DEFAULT_MODEL='
       - 'OLLAMA_HOST='
+      - 'NEXT_PUBLIC_API_TIMEOUT=600000'

@@ -8,6 +8,8 @@ export type RequestWithBodyModel = RequestModel & {
   body?: object | FormData;
 };
 
+import { API_TIMEOUT_DURATION } from '@/utils/app/const';
+
 export const useFetch = () => {
   const handleFetch = async (
     url: string,
@@ -30,36 +32,53 @@ export const useFetch = () => {
         : { 'Content-type': 'application/json' }),
     };
 
-    return fetch(requestUrl, { ...requestBody, headers, signal })
-      .then((response) => {
-        if (!response.ok) throw response;
+    // Create a timeout signal if one wasn't provided
+    let timeoutSignal = signal;
+    let timeoutId: NodeJS.Timeout | undefined;
+    
+    if (!timeoutSignal) {
+      const controller = new AbortController();
+      timeoutSignal = controller.signal;
+      timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_DURATION);
+    }
 
-        const contentType = response.headers.get('content-type');
-        const contentDisposition = response.headers.get('content-disposition');
+    try {
+      return await fetch(requestUrl, { ...requestBody, headers, signal: timeoutSignal })
+        .then((response) => {
+          if (!response.ok) throw response;
 
-        const headers = response.headers;
+          const contentType = response.headers.get('content-type');
+          const contentDisposition = response.headers.get('content-disposition');
 
-        const result =
-          contentType &&
-          (contentType?.indexOf('application/json') !== -1 ||
-            contentType?.indexOf('text/plain') !== -1)
-            ? response.json()
-            : contentDisposition?.indexOf('attachment') !== -1
-            ? response.blob()
-            : response;
+          const headers = response.headers;
 
-        return result;
-      })
-      .catch(async (err) => {
-        const contentType = err.headers.get('content-type');
+          const result =
+            contentType &&
+            (contentType?.indexOf('application/json') !== -1 ||
+              contentType?.indexOf('text/plain') !== -1)
+              ? response.json()
+              : contentDisposition?.indexOf('attachment') !== -1
+              ? response.blob()
+              : response;
 
-        const errResult =
-          contentType && contentType?.indexOf('application/problem+json') !== -1
-            ? await err.json()
-            : err;
+          return result;
+        })
+        .catch(async (err) => {
+          const contentType = err.headers?.get?.('content-type');
 
-        throw errResult;
-      });
+          const errResult =
+            contentType && contentType?.indexOf('application/problem+json') !== -1
+              ? await err.json()
+              : err;
+
+          throw errResult;
+        });
+    } finally {
+      // Clean up timeout if we created one
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    }
   };
 
   return {
