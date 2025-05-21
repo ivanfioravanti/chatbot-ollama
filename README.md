@@ -86,3 +86,4 @@ When deploying the application, the following environment variables can be set:
 ## Contact
 
 If you have any questions, feel free to reach out to me on [X](https://x.com/ivanfioravanti).
+
