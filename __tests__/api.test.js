@@ -1,8 +1,17 @@
-import { test, expect } from 'vitest'
-import fetch from 'node-fetch'
+import { test, expect, vi } from 'vitest'
 
-// ✅ This is a valid test block
-test('POST /api/chat returns fashion feedback', async () => {
+// ✅ Mock the global fetch call
+vi.stubGlobal('fetch', async () =>
+  Promise.resolve({
+    json: async () => ({
+      message: {
+        content: '🎯 Stylish! 📝 Great choice. 💡 Add a belt for flair!',
+      },
+    }),
+  })
+)
+
+test('POST /api/chat returns fashion feedback (mocked)', async () => {
   const res = await fetch('http://localhost:3000/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
