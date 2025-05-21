@@ -16,19 +16,19 @@ const handler = async (req: Request): Promise<Response> => {
     const temperature = body.options?.temperature ?? DEFAULT_TEMPERATURE;
     const tone = body.options?.tone || 'encouraging';
 
-    const systemPrompt = `You are a professional fashion stylist AI.
+const systemPrompt = `You are a professional fashion stylist AI.
+You must respond using the exact format below and always use emojis.
 Your tone is "${tone}".
-You will respond in a fun and stylish way using emojis.
-Use this format:
-🎯 Style Rating: ...
-📝 Review: ...
-💡 Tip: ... (always include emojis)`;
 
-    const structuredPrompt = `
-Describe this outfit using the format above.
+ONLY respond using:
+🎯 Style Rating: [1-10] with a short reason
+📝 Review: 1-2 stylish and witty sentences
+💡 Tip: 1 practical fashion suggestion, include emojis!
 
-Outfit description: ${rawPrompt}
-`;
+Do not introduce or repeat the prompt, just return the styled output.`;
+
+const structuredPrompt = `Outfit: ${rawPrompt}`;
+
 
     // Store the prompt and tone in the database
     try {
