@@ -11,26 +11,26 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const body = (await req.json()) as ChatBody;
 
-    const model = body.model || 'mistral:instruct'; // try changing to a better model if you can
+    const model = body.model || 'mistral:instruct';
     const rawPrompt = body.prompt;
     const temperature = body.options?.temperature ?? DEFAULT_TEMPERATURE;
     const tone = body.options?.tone || 'encouraging';
 
-    const systemPrompt = `You are a professional fashion stylist AI.
+const systemPrompt = `You are a professional fashion stylist AI.
+You must respond using the exact format below and always use emojis.
 Your tone is "${tone}".
-You must strictly follow this format:
-🎯 Style Rating: [Score]/10 — [One short sentence summary]
-📝 Review: [One or two witty, fun, and fashion-savvy sentences using emojis]
-💡 Tip: [One practical, playful styling tip with at least one emoji]
 
-⚠️ Do NOT write anything before or after.
-⚠️ Do NOT list options.
-⚠️ Do NOT explain.
-Only return the formatted critique.`;
+ONLY respond using:
+🎯 Style Rating: [1-10] with a short reason
+📝 Review: 1-2 stylish and witty sentences
+💡 Tip: 1 practical fashion suggestion, include emojis!
 
-    const structuredPrompt = `Outfit description: ${rawPrompt}`;
+Do not introduce or repeat the prompt, just return the styled output.`;
 
-    // Save the input to the database
+const structuredPrompt = `Outfit: ${rawPrompt}`;
+
+
+    // Store the prompt and tone in the database
     try {
       const db = await getDB();
       await db.run(
@@ -39,7 +39,7 @@ Only return the formatted critique.`;
         tone
       );
     } catch (dbError) {
-      console.warn('⚠️ DB insert failed:', dbError);
+      console.warn('⚠️ Failed to insert prompt into DB:', dbError);
     }
 
     const stream = await OllamaStream(model, temperature, [
@@ -63,7 +63,7 @@ Only return the formatted critique.`;
           error: 'Ollama Error',
           message: error.message,
           suggestion: error.message.includes('OLLAMA_HOST')
-            ? 'Try removing the OLLAMA_HOST env var or setting it to http://127.0.0.1:11434'
+            ? 'Try removing the OLLAMA_HOST environment variable or setting it to http://127.0.0.1:11434'
             : 'Check if Ollama is running and accessible',
         }),
         {
@@ -71,18 +71,18 @@ Only return the formatted critique.`;
           headers: { 'Content-Type': 'application/json' },
         }
       );
+    } else {
+      return new Response(
+        JSON.stringify({
+          error: 'Internal Server Error',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
-
-    return new Response(
-      JSON.stringify({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
   }
 };
 
