@@ -1,4 +1,4 @@
-name: Deploy StylistBot to EC2
+name: Deploy to EC2
 
 on:
   push:
@@ -21,5 +21,4 @@ jobs:
           git pull origin main
           npm install
           npm run build
-          pm2 restart stylistbot || pm2 start npm --name stylistbot -- run start
-
+          sudo systemctl restart stylistbot
