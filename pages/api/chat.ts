@@ -15,28 +15,31 @@ const handler = async (req: Request): Promise<Response> => {
     const temperature = body.options?.temperature ?? DEFAULT_TEMPERATURE;
     const tone = body.options?.tone || 'encouraging';
 
-const systemPrompt = `You are a professional fashion stylist AI.
+    // Get gender and occasion from user input, provide default placeholders if missing
+    const gender = body.gender || 'female or male';
+    const occasion = body.occasion || 'wedding, work, casual, or party';
+
+    const systemPrompt = `You are a professional fashion stylist AI.
 You must respond using the exact format below and always use emojis.
 Your tone is "${tone}".
 
-ONLY respond using:
+ONLY respond using this exact format:
+
 🎯 Style Rating: [1-10] with a short reason
 📝 Review: 1-2 stylish and witty sentences
 💡 Tip: 1 practical fashion suggestion, include emojis!
 
 Do not introduce or repeat the prompt, just return the styled output.`;
 
-const structuredPrompt = `Outfit: ${rawPrompt}`;
+    // Construct the user prompt including gender and occasion inputs
+    const structuredPrompt = `Gender: ${gender}
+Occasion: ${occasion}
+Outfit: ${rawPrompt}`;
 
-
-    // Store the prompt and tone in the database
+    // Optional: Store prompt and tone in DB (assuming getDB() exists)
     try {
       const db = await getDB();
-      await db.run(
-        'INSERT INTO prompts (prompt, tone) VALUES (?, ?)',
-        rawPrompt,
-        tone
-      );
+      await db.run('INSERT INTO prompts (prompt, tone) VALUES (?, ?)', rawPrompt, tone);
     } catch (dbError) {
       console.warn('⚠️ Failed to insert prompt into DB:', dbError);
     }
