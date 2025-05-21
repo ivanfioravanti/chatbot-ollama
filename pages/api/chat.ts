@@ -1,7 +1,7 @@
 import { DEFAULT_TEMPERATURE } from '@/utils/app/const';
 import { OllamaError, OllamaStream } from '@/utils/server';
 import { ChatBody } from '@/types/chat';
-import { getDB } from '@/lib/db'; // assumes you created this
+import { getDB } from '@/lib/db';
 
 export const config = {
   runtime: 'edge',
@@ -12,24 +12,30 @@ const handler = async (req: Request): Promise<Response> => {
     const body = (await req.json()) as ChatBody;
 
     const model = body.model || 'mistral:instruct';
-    const prompt = body.prompt;
+    const rawPrompt = body.prompt;
     const temperature = body.options?.temperature ?? DEFAULT_TEMPERATURE;
     const tone = body.options?.tone || 'encouraging';
 
     const systemPrompt = `You are a professional fashion stylist AI.
-Your tone is ${tone}.
+Your tone is "${tone}".
 You will respond in a fun and stylish way using emojis.
-Use the following format:
+Use this format:
 🎯 Style Rating: ...
 📝 Review: ...
 💡 Tip: ... (always include emojis)`;
+
+    const structuredPrompt = `
+Describe this outfit using the format above.
+
+Outfit description: ${rawPrompt}
+`;
 
     // Store the prompt and tone in the database
     try {
       const db = await getDB();
       await db.run(
         'INSERT INTO prompts (prompt, tone) VALUES (?, ?)',
-        prompt,
+        rawPrompt,
         tone
       );
     } catch (dbError) {
@@ -43,7 +49,7 @@ Use the following format:
       },
       {
         role: 'user',
-        content: prompt,
+        content: structuredPrompt,
       },
     ]);
 
