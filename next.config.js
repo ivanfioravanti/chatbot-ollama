@@ -4,6 +4,7 @@ const { i18n } = require('./next-i18next.config');
 const nextConfig = {
   i18n,
   reactStrictMode: true,
+  swcMinify: true,
   
   // Configure to use Turbopack in development
   experimental: {
@@ -32,10 +33,11 @@ const nextConfig = {
     config.experiments = {
       asyncWebAssembly: true,
       layers: true,
+      topLevelAwait: true,
     };
 
     return config;
-  },
+  }
 };
 
 module.exports = nextConfig;
