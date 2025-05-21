@@ -17,7 +17,7 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          cd stylistbot
+          cd chatbot-ollama
           git pull origin main
           npm install
           npm run build
