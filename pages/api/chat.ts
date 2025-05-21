@@ -8,46 +8,39 @@ export const config = {
 
 const handler = async (req: Request): Promise<Response> => {
   try {
-    // Parse request JSON body
     const body = (await req.json()) as ChatBody;
 
-    // Extract parameters, use defaults if missing
     const model = body.model || 'mistral:instruct';
-    const rawPrompt = body.prompt || '';
+    const rawPrompt = body.prompt;
     const temperature = body.options?.temperature ?? DEFAULT_TEMPERATURE;
     const tone = body.options?.tone || 'encouraging';
 
-    // Expect gender and occasion as separate fields
-    const gender = body.gender || 'female or male';
-    const occasion = body.occasion || 'wedding, work, casual, or party';
-
-    // System prompt defines the output format and tone
-    const systemPrompt = `You are a professional fashion stylist AI.
+const systemPrompt = `You are a professional fashion stylist AI.
 You must respond using the exact format below and always use emojis.
 Your tone is "${tone}".
 
-ONLY respond using this exact format:
-
+ONLY respond using:
 🎯 Style Rating: [1-10] with a short reason
 📝 Review: 1-2 stylish and witty sentences
 💡 Tip: 1 practical fashion suggestion, include emojis!
 
 Do not introduce or repeat the prompt, just return the styled output.`;
 
-    // Combine gender, occasion, and outfit into one user prompt
-    const structuredPrompt = `Gender: ${gender}
-Occasion: ${occasion}
-Outfit: ${rawPrompt}`;
+const structuredPrompt = `Outfit: ${rawPrompt}`;
 
-    // Optionally store prompt + tone in database if getDB exists
+
+    // Store the prompt and tone in the database
     try {
       const db = await getDB();
-      await db.run('INSERT INTO prompts (prompt, tone) VALUES (?, ?)', rawPrompt, tone);
+      await db.run(
+        'INSERT INTO prompts (prompt, tone) VALUES (?, ?)',
+        rawPrompt,
+        tone
+      );
     } catch (dbError) {
       console.warn('⚠️ Failed to insert prompt into DB:', dbError);
     }
 
-    // Call Ollama streaming API with prompts
     const stream = await OllamaStream(model, temperature, [
       {
         role: 'system',
@@ -59,7 +52,6 @@ Outfit: ${rawPrompt}`;
       },
     ]);
 
-    // Return streaming response
     return new Response(stream);
   } catch (error) {
     console.error('Chat API error:', error);
