@@ -17,8 +17,24 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          echo "🛠 Pulling latest code..."
           cd chatbot-ollama
           git pull origin main
+
+          echo "📦 Installing frontend dependencies..."
+          cd frontend
           npm install
           npm run build
+          cd ..
+
+          echo "🚀 Installing backend dependencies..."
+          cd api
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          cd ..
+
+          echo "🔁 Restarting StylistBot service..."
           sudo systemctl restart stylistbot
+
