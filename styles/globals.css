@@ -2,6 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background-gradient-start: #f3e8ff;
+  --background-gradient-end: #fce7f3;
+}
+
+body {
+  @apply bg-gradient-to-b from-purple-50 to-pink-50 min-h-screen;
+}
+
+.quiz-container {
+  @apply max-w-3xl mx-auto p-6;
+}
+
+.quiz-title {
+  @apply text-4xl font-bold text-center text-purple-800 mb-8;
+}
+
+.quiz-input {
+  @apply w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500;
+}
+
+.quiz-button {
+  @apply px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+}
+
+.quiz-question {
+  @apply p-6 rounded-lg shadow-md bg-white mb-6;
+}
+
+.quiz-question.correct {
+  @apply bg-green-50;
+}
+
+.quiz-question.incorrect {
+  @apply bg-red-50;
+}
+
+.quiz-feedback {
+  @apply mt-2 text-sm;
+}
+
+.quiz-feedback.correct {
+  @apply text-green-600;
+}
+
+.quiz-feedback.incorrect {
+  @apply text-red-600;
+}
+
+.quiz-score {
+  @apply text-2xl font-bold text-center text-purple-800 mt-6;
+}
+
+.loading-spinner {
+  @apply animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500;
+}
+
 ::-webkit-scrollbar-track {
   background-color: transparent;
 }
