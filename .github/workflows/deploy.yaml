@@ -22,3 +22,4 @@ jobs:
           npm install
           npm run build
           pm2 restart stylistbot || pm2 start npm --name stylistbot -- run start
+
