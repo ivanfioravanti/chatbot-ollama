@@ -1,7 +1,6 @@
 import { DEFAULT_TEMPERATURE } from '@/utils/app/const';
 import { OllamaError, OllamaStream } from '@/utils/server';
 import { ChatBody } from '@/types/chat';
-import { getDB } from '@/lib/db';
 
 export const config = {
   runtime: 'edge',
