@@ -37,4 +37,3 @@ jobs:
 
           echo "🔁 Restarting StylistBot service..."
           sudo systemctl restart stylistbot
-
