@@ -124,17 +124,19 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           return;
         }
         else if (questionIndex + 1 === assistantQuestions.length) {
+            const allAnswers = [...answers, message.content];
                 setQuestionIndex(-1);
+                 setAnswers([]);
 
               // We've collected all answers, now ask the LLM to write the email
               const finalPrompt = "Thanks! Please write a professional email based on the answers above.";
               const summaryPrompt = `
             Based on the following answers, write a professional email:
 
-            1. Recipient: ${answers[0]}
-            2. Sender: ${answers[1]}
-            2. Purpose: ${answers[2]}
-            3. Important details: ${answers[3]}
+            1. Recipient: ${allAnswers[0]}
+            2. Sender: ${allAnswers[1]}
+            2. Purpose: ${allAnswers[2]}
+            3. Important details: ${allAnswers[3]}
             4. Formality: ${message.content}
             `;
 
@@ -158,7 +160,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               //await handleSend({ role: 'user', content: summaryPrompt });
 
               //setQuestionIndex(1); // optional
-              setAnswers([]);
+
             }
 
 
@@ -369,12 +371,36 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   const throttledScrollDown = throttle(scrollDown, 250);
 
   useEffect(() => {
-    throttledScrollDown();
-    selectedConversation &&
+  throttledScrollDown();
+
+  if (selectedConversation) {
+    const numMessages = selectedConversation.messages.length;
+
+    if (numMessages === 0 ) {
+      // New conversation, inject first assistant question
+      const firstQuestion = assistantQuestions[0];
+      const updatedConversation: Conversation = {
+        ...selectedConversation,
+        messages: [{ role: 'assistant', content: firstQuestion }],
+      };
+
+      homeDispatch({
+        field: 'selectedConversation',
+        value: updatedConversation,
+      });
+
+      saveConversation(updatedConversation);
+      setQuestionIndex(-1);
+      setAnswers([]);
+    } else {
       setCurrentMessage(
-        selectedConversation.messages[selectedConversation.messages.length - 2],
+        selectedConversation.messages[numMessages - 2]
       );
-  }, [selectedConversation, throttledScrollDown]);
+    }
+  }
+}, [selectedConversation, throttledScrollDown]);
+
+
 
   useEffect(() => {
     const observer = new IntersectionObserver(
