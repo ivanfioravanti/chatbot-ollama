@@ -14,32 +14,27 @@ const handler = async (req: Request): Promise<Response> => {
     const rawPrompt = body.prompt;
     const temperature = body.options?.temperature ?? DEFAULT_TEMPERATURE;
     const tone = body.options?.tone || 'encouraging';
+    const gender = body.gender || '';
+    const occasion = body.occasion || '';
 
 const systemPrompt = `You are a professional fashion stylist AI.
 You must respond using the exact format below and always use emojis.
 Your tone is "${tone}".
 
-ONLY respond using:
-🎯 Style Rating: [1-10] with a short reason
-📝 Review: 1-2 stylish and witty sentences
-💡 Tip: 1 practical fashion suggestion, include emojis!
+ONLY respond using this exact format:
 
-Do not introduce or repeat the prompt, just return the styled output.`;
+🎯 Style Rating: [number from 1 to 5]
+📝 Review: [1 short sentence, max 15 words]
+💡 Styling Tip: [1 tip to improve the look]
 
-const structuredPrompt = `Outfit: ${rawPrompt}`;
+Each line must include at least one relevant emoji.
+Keep responses concise and fun.
+Do not add any other text or formatting.`;
 
-
-    // Store the prompt and tone in the database
-    try {
-      const db = await getDB();
-      await db.run(
-        'INSERT INTO prompts (prompt, tone) VALUES (?, ?)',
-        rawPrompt,
-        tone
-      );
-    } catch (dbError) {
-      console.warn('⚠️ Failed to insert prompt into DB:', dbError);
-    }
+const structuredPrompt = `
+👤 Gender: ${gender}
+📅 Occasion: ${occasion}
+👔 Outfit: ${rawPrompt}`;
 
     const stream = await OllamaStream(model, temperature, [
       {
