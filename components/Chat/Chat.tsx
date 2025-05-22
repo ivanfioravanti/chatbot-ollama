@@ -376,7 +376,6 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   if (selectedConversation) {
     const numMessages = selectedConversation.messages.length;
 
-
     if (numMessages === 0 ) {
       // New conversation, inject first assistant question
       const firstQuestion = assistantQuestions[0];
