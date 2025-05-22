@@ -1,0 +1,58 @@
+# The name of the workflow
+name: Chatbot Deploy
+
+on:
+  # The workflow will run when a push is made to branch `main`
+  push:
+    branches:
+     - main
+
+  # Allow to run it manually as well from GitHub web
+  workflow_dispatch:
+
+# Environment variables
+env:
+  # The URL of the GitHub repository, taken from GitHub context variables
+  REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
+  # The name of the repository without owner, taken from GitHub context variables
+  REPO_NAME: ${{ github.event.repository.name }}
+
+# A workflow run is made up of one or more jobs. By default, different jobs are running concurrently
+jobs:
+  # This is a job named `Deploy`
+  Deploy:
+    # The type of machine to run the job on
+    runs-on: ubuntu-latest
+
+    # A job contains a sequence of tasks called steps
+    steps:
+      # The first step, named **Checkout code**,
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
+          chmod 600 ~/.ssh/private_key
+          cat > ~/.ssh/config << EOF
+          Host ec2
+              HostName $EC2_HOST
+              User $EC2_USERNAME
+              IdentityFile ~/.ssh/private_key
+              StrictHostKeyChecking no
+          EOF
+
+      - name: Copy script to EC2
+
+        run: |
+          # Clone repository if it doesn't exist, otherwise pull latest changes
+          ssh ec2 "if [ -d ~/${REPO_NAME} ]; then cd ~/${REPO_NAME} && git pull; else git clone ${REPO_URL} ~/${REPO_NAME}; fi"
+
+      - name: Execute script on EC2
+        run: |
+          ssh ec2 "cd $REPO_NAME && bash deploy.sh"

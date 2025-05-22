@@ -1,0 +1,11 @@
+[Unit]
+Description=Chatbot ollama Server
+After=network.target
+
+[Service]
+WorkingDirectory=/home/ubuntu/chatbot-ollama
+ExecStart=/usr/bin/npm run dev
+Restart=always
+Environment=OLLAMA_HOST=http://16.170.160.193:11434
+[Install]
+WantedBy=multi-user.target
