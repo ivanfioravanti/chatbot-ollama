@@ -13,7 +13,7 @@ export interface OllamaModelDetail {
 }
 
 export enum OllamaModelID {
-  DEFAULTMODEL = 'mistral:latest'
+  DEFAULTMODEL = 'llama3.2:1b'
 }
 
 // in case the `DEFAULT_MODEL` environment variable is not set or set to an unsupported model
@@ -21,7 +21,7 @@ export const fallbackModelID = OllamaModelID.DEFAULTMODEL;
 
 export const OllamaModels: Record<OllamaModelID, OllamaModel> = {
   [OllamaModelID.DEFAULTMODEL]: {
-    name: 'mistral:latest',
+    name: 'llama3.2:1b',
     modified_at: new Date(),
     size: 16384,
   },

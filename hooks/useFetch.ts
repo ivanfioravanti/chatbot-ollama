@@ -16,7 +16,11 @@ export const useFetch = () => {
     request: any,
     signal?: AbortSignal,
   ) => {
-    const requestUrl = request?.params ? `${url}${request.params}` : url;
+    const baseUrl = import.meta.env.VITE_OLLAMA_API_BASE_URL || 'http://localhost:11434';
+    //const requestUrl = request?.params ? `${url}${request.params}` : url;
+    const requestUrl = request?.params ? `${baseUrl}${url}${request.params}` : `${baseUrl}${url}`;
+
+
 
     const requestBody = request?.body
       ? request.body instanceof FormData
@@ -25,6 +29,7 @@ export const useFetch = () => {
       : request;
 
     const headers = {
+         Host: 'localhost',
       ...(request?.headers
         ? request.headers
         : request?.body && request.body instanceof FormData

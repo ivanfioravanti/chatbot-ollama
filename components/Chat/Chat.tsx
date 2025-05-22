@@ -37,6 +37,15 @@ interface Props {
   stopConversationRef: MutableRefObject<boolean>;
 }
 
+
+const assistantQuestions = [
+  "What's the recipient's name?",
+  "What's the sender's name?",
+  "What is the purpose of the email?",
+  "Any important details to include?",
+  "How formal should the email be?",
+];
+
 export const Chat = memo(({ stopConversationRef }: Props) => {
   const { t } = useTranslation('chat');
   const {
@@ -62,6 +71,8 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [questionIndex, setQuestionIndex] = useState(-1);
+    const [answers, setAnswers] = useState<string[]>([]);
 
   const handleSend = useCallback(
     async (message: Message, deleteCount = 0 ) => {
@@ -86,12 +97,78 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           field: 'selectedConversation',
           value: updatedConversation,
         });
+            if (questionIndex >=0 ) setAnswers(prev => [...prev, message.content]);
+
+        // Add next assistant question, if available
+        if (questionIndex +1  < assistantQuestions.length) {
+          const nextQuestion = assistantQuestions[questionIndex + 1];
+
+          const updatedMessages: Message[] = [
+            ...updatedConversation.messages,
+            { role: 'assistant', content: nextQuestion },
+          ];
+
+          const newConversation: Conversation = {
+            ...updatedConversation,
+            messages: updatedMessages,
+          };
+
+          homeDispatch({
+            field: 'selectedConversation',
+            value: newConversation,
+          });
+
+          saveConversation(newConversation);
+          //setQuestionIndex(questionIndex + 1);
+          setQuestionIndex((prev) => prev + 1);
+          return;
+        }
+        else if (questionIndex + 1 === assistantQuestions.length) {
+                setQuestionIndex(-1);
+
+              // We've collected all answers, now ask the LLM to write the email
+              const finalPrompt = "Thanks! Please write a professional email based on the answers above.";
+              const summaryPrompt = `
+            Based on the following answers, write a professional email:
+
+            1. Recipient: ${answers[0]}
+            2. Sender: ${answers[1]}
+            2. Purpose: ${answers[2]}
+            3. Important details: ${answers[3]}
+            4. Formality: ${message.content}
+            `;
+
+            const updatedMessages: Message[] = [
+              ...updatedConversation.messages,
+              { role: 'system', content: summaryPrompt },
+            ];
+
+
+              updatedConversation = {
+                ...updatedConversation,
+                messages: updatedMessages,
+              };
+
+              homeDispatch({
+                field: 'selectedConversation',
+                value: updatedConversation,
+              });
+
+              saveConversation(updatedConversation);
+              //await handleSend({ role: 'user', content: summaryPrompt });
+
+              //setQuestionIndex(1); // optional
+              setAnswers([]);
+            }
+
+
         homeDispatch({ field: 'loading', value: true });
         homeDispatch({ field: 'messageIsStreaming', value: true });
         const chatBody: ChatBody = {
           model: updatedConversation.model.name,
           system: updatedConversation.prompt,
           prompt: updatedConversation.messages.map(message => message.content).join(' '),
+          //messages: updatedConversation.messages,
           options: { temperature: updatedConversation.temperature },
         };
         const endpoint = getEndpoint();
@@ -280,6 +357,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         key: 'messages',
         value: [],
       });
+    setQuestionIndex(0);
     }
   };
 
@@ -397,7 +475,9 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                   </div>
                 )}
 
-                {selectedConversation?.messages.map((message, index) => (
+                {selectedConversation?.messages
+                     .filter((message) => message.role !== 'system')
+                    .map((message, index) => (
                   <MemoizedChatMessage
                     key={index}
                     message={message}
