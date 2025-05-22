@@ -87,3 +87,41 @@ When deploying the application, the following environment variables can be set:
 
 If you have any questions, feel free to reach out to me on [X](https://x.com/ivanfioravanti).
 
+# Chatbot Ollama – StylistBot Edition 💅
+
+## About
+
+Chatbot Ollama is an open source chat UI for [Ollama](https://ollama.com), now customized into **StylistBot** – an AI-powered fashion assistant.
+
+Originally based on [chatbot-ui](https://github.com/mckaywrigley/chatbot-ui) by [Mckay Wrigley](https://github.com/mckaywrigley), this version was extended to analyze fashion outfits and provide style ratings, reviews, and improvement tips.
+
+![StylistBot Screenshot](./public/screenshots/stylistbot-example.png)
+
+---
+
+## ✨ Custom Features: StylistBot
+
+This project was modified to create **StylistBot**, an AI that evaluates fashion input based on gender, occasion, and clothing description.
+
+### ✅ Features Added
+
+- 🧥 **Outfit Input with Context**:
+  - Gender (e.g., male/female)
+  - Occasion (e.g., wedding, work, casual, party)
+  - Outfit description
+
+- 🧠 **AI Prompt Formatting**:
+  The system prompt sent to the model includes:
+
+👤 Gender: [user input]
+📅 Occasion: [user input]
+🧥 Outfit: [user input]
+
+🎯 **AI Response Includes**:
+- Style Rating (1–5)
+- Review (short & stylish)
+- Styling Tip (improvement advice with emojis)
+
+- 🛠 **API Logic**:
+- Updated `/api/chat` to include gender and occasion in the prompt
+- Uses Mistral model via Ollama backend
