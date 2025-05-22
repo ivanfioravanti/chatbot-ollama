@@ -95,7 +95,6 @@ Chatbot Ollama is an open source chat UI for [Ollama](https://ollama.com), now c
 
 Originally based on [chatbot-ui](https://github.com/mckaywrigley/chatbot-ui) by [Mckay Wrigley](https://github.com/mckaywrigley), this version was extended to analyze fashion outfits and provide style ratings, reviews, and improvement tips.
 
-![StylistBot Screenshot](./public/screenshots/stylistbot-example.png)
 
 ---
 
