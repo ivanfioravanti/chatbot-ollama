@@ -1,4 +1,3 @@
-'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 
@@ -15,10 +14,12 @@ export default function OutfitForm() {
     setLoading(true);
     setResponse('');
 
-    const formattedPrompt = 
-`👤 Gender: ${gender || 'unspecified'}
-📅 Occasion: ${occasion || 'any'}
-🧥 Outfit: ${outfit}`;
+    const formattedPrompt = `
+👤 Gender: ${gender}
+
+📅 Occasion: ${occasion}
+
+🧥 Outfit description: ${outfit}`;
 
     try {
       const res = await fetch('/api/chat', {
@@ -30,8 +31,8 @@ export default function OutfitForm() {
           prompt: formattedPrompt,
           options: {
             temperature: 0.7,
-            tone: 'encouraging',
-          },
+            tone: 'encouraging'
+          }
         }),
       });
 
@@ -55,7 +56,7 @@ export default function OutfitForm() {
         <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
           Fashion Stylist AI
         </h1>
-
+        
         <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-[#343541] p-6 rounded-lg shadow">
           <div>
             <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -69,9 +70,8 @@ export default function OutfitForm() {
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-[#40414F] dark:border-gray-600 dark:text-white"
             >
               <option value="">Select gender</option>
-              <option value="female">Female</option>
               <option value="male">Male</option>
-              <option value="unspecified">Unspecified</option>
+              <option value="female">Female</option>
             </select>
           </div>
 
@@ -106,7 +106,7 @@ export default function OutfitForm() {
               onChange={(e) => setOutfit(e.target.value)}
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-[#40414F] dark:border-gray-600 dark:text-white"
-              placeholder="Example: White dress and gold heels with a pearl necklace"
+              placeholder="Example: Black turtleneck, jeans, and sneakers"
             />
           </div>
 
@@ -122,12 +122,12 @@ export default function OutfitForm() {
         {response && (
           <div className="mt-6 bg-white dark:bg-[#343541] p-6 rounded-lg shadow">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Feedback</h2>
-            <div className="prose dark:prose-invert max-w-none whitespace-pre-wrap">
-              {response}
+            <div className="prose dark:prose-invert max-w-none">
+              <div className="whitespace-pre-wrap">{response}</div>
             </div>
           </div>
         )}
       </div>
     </div>
   );
-}
+} 
