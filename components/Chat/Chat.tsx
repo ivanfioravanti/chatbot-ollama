@@ -39,6 +39,7 @@ interface Props {
 
 
 const assistantQuestions = [
+    "How can i help you",
   "What's the recipient's name?",
   "What's the sender's name?",
   "What is the purpose of the email?",
@@ -71,7 +72,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const [questionIndex, setQuestionIndex] = useState(-1);
+    const [questionIndex, setQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<string[]>([]);
 
   const handleSend = useCallback(
@@ -133,10 +134,10 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               const summaryPrompt = `
             Based on the following answers, write a professional email:
 
-            1. Recipient: ${allAnswers[0]}
-            2. Sender: ${allAnswers[1]}
-            2. Purpose: ${allAnswers[2]}
-            3. Important details: ${allAnswers[3]}
+            1. Recipient: ${allAnswers[1]}
+            2. Sender: ${allAnswers[2]}
+            2. Purpose: ${allAnswers[3]}
+            3. Important details: ${allAnswers[4]}
             4. Formality: ${message.content}
             `;
 
@@ -390,7 +391,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       });
 
       saveConversation(updatedConversation);
-      setQuestionIndex(-1);
+      setQuestionIndex(0);
       setAnswers([]);
     } else {
       setCurrentMessage(
