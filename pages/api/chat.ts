@@ -86,3 +86,5 @@ const structuredPrompt = `Outfit: ${rawPrompt}`;
 };
 
 export default handler;
+
+
