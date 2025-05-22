@@ -11,13 +11,11 @@ const handler = async (req: Request): Promise<Response> => {
     const body = (await req.json()) as ChatBody;
 
     const model = body.model || 'mistral:instruct';
-    const rawPrompt = body.prompt;
+    const prompt = body.prompt;
     const temperature = body.options?.temperature ?? DEFAULT_TEMPERATURE;
     const tone = body.options?.tone || 'encouraging';
-    const gender = body.gender || '';
-    const occasion = body.occasion || '';
 
-const systemPrompt = `You are a professional fashion stylist AI.
+    const systemPrompt = `You are a professional fashion stylist AI.
 You must respond using the exact format below and always use emojis.
 Your tone is "${tone}".
 
@@ -31,11 +29,6 @@ Each line must include at least one relevant emoji.
 Keep responses concise and fun.
 Do not add any other text or formatting.`;
 
-const structuredPrompt = `
-👤 Gender: ${gender}
-📅 Occasion: ${occasion}
-👔 Outfit: ${rawPrompt}`;
-
     const stream = await OllamaStream(model, temperature, [
       {
         role: 'system',
@@ -43,7 +36,7 @@ const structuredPrompt = `
       },
       {
         role: 'user',
-        content: structuredPrompt,
+        content: prompt,
       },
     ]);
 
@@ -81,5 +74,3 @@ const structuredPrompt = `
 };
 
 export default handler;
-
-
