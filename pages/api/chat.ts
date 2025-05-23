@@ -21,7 +21,6 @@ Your tone is "${tone}".
 
 ONLY respond using this exact format:
 
-🎯 Style Rating: [number from 1 to 5]
 📝 Review: [1 short sentence, max 15 words]
 💡 Styling Tip: [1 tip to improve the look]
 
