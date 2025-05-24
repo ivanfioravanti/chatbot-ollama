@@ -20,13 +20,13 @@ You must respond using the exact format below and always use emojis.
 Your tone is "${tone}".
 
 ONLY respond using this exact format:
-
 🎯 Style Rating: [number from 1 to 10]
 📝 Review: [1 short sentence, max 20 words]
 💡 Styling Tip: [1 tip to improve the look]
 
 Each line must include at least one relevant emoji.
-Return the response **exactly** as 3 lines separated by newline characters (\\n).
+Do not combine all responses into a single line.
+Return your answer using actual new lines between each response.
 Keep responses concise and fun.
 Do not add any other text or formatting.`;
 
