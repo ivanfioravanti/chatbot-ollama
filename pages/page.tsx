@@ -56,7 +56,7 @@ export default function OutfitForm() {
         <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
           Fashion Stylist AI
         </h1>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-[#343541] p-6 rounded-lg shadow">
           <div>
             <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -123,11 +123,16 @@ export default function OutfitForm() {
           <div className="mt-6 bg-white dark:bg-[#343541] p-6 rounded-lg shadow">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Feedback</h2>
             <div className="prose dark:prose-invert max-w-none">
-              <div className="whitespace-pre-wrap">{response}</div>
+              {response.split('\n').map((line, idx) => (
+                <span key={idx}>
+                  {line}
+                  <br />
+                </span>
+              ))}
             </div>
           </div>
         )}
       </div>
     </div>
   );
-} 
+}
