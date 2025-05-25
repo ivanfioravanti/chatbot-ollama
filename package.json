@@ -19,6 +19,7 @@
     "i18next": "^22.4.13",
     "next": "15.2.3",
     "next-i18next": "^13.2.2",
+    "node-fetch": "^3.3.2",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-hot-toast": "^2.4.0",

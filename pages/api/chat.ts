@@ -1,8 +1,6 @@
-import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
+import { DEFAULT_TEMPERATURE } from '@/utils/app/const';
 import { OllamaError, OllamaStream } from '@/utils/server';
-
-import { ChatBody, Message } from '@/types/chat';
-
+import { ChatBody } from '@/types/chat';
 
 export const config = {
   runtime: 'edge',
@@ -10,48 +8,70 @@ export const config = {
 
 const handler = async (req: Request): Promise<Response> => {
   try {
-    const { model, system, options, prompt } = (await req.json()) as ChatBody;
+    const body = (await req.json()) as ChatBody;
+
+    const model = body.model || 'mistral:instruct';
+    const prompt = body.prompt;
+    const temperature = body.options?.temperature ?? DEFAULT_TEMPERATURE;
+    const tone = body.options?.tone || 'encouraging';
+
+    const systemPrompt = `You are a professional fashion stylist AI.
+You must respond using the exact format below and always use emojis.
+Your tone is "${tone}".
+
+ONLY respond using this exact format:
+🎯 Style Rating: [number from 1 to 10]
+📝 Review: [1 short sentence, max 20 words]
+💡 Styling Tip: [1 tip to improve the look]
+
+Each line must include at least one relevant emoji.
+Do not combine all responses into a single line.
+Return your answer using actual new lines between each response.
+Keep responses concise and fun.
+Do not add any other text or formatting.`;
 
 
-    let promptToSend = system;
-    if (!promptToSend) {
-      promptToSend = DEFAULT_SYSTEM_PROMPT;
-    }
 
-    let temperatureToUse = options?.temperature;
-    if (temperatureToUse == null) {
-      temperatureToUse = DEFAULT_TEMPERATURE;
-    }
-
-    const stream = await OllamaStream (model, promptToSend, temperatureToUse, prompt);
+    const stream = await OllamaStream(model, temperature, [
+      {
+        role: 'system',
+        content: systemPrompt,
+      },
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ]);
 
     return new Response(stream);
   } catch (error) {
     console.error('Chat API error:', error);
+
     if (error instanceof OllamaError) {
-      // Return a more descriptive error message to help with debugging
-      return new Response(JSON.stringify({ 
-        error: 'Ollama Error', 
-        message: error.message,
-        suggestion: error.message.includes('OLLAMA_HOST') ? 
-          'Try removing the OLLAMA_HOST environment variable or setting it to http://127.0.0.1:11434' : 
-          'Check if Ollama is running and accessible'
-      }), { 
-        status: 500, 
-        headers: {
-          'Content-Type': 'application/json'
-        } 
-      });
+      return new Response(
+        JSON.stringify({
+          error: 'Ollama Error',
+          message: error.message,
+          suggestion: error.message.includes('OLLAMA_HOST')
+            ? 'Try removing the OLLAMA_HOST environment variable or setting it to http://127.0.0.1:11434'
+            : 'Check if Ollama is running and accessible',
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     } else {
-      return new Response(JSON.stringify({ 
-        error: 'Internal Server Error', 
-        message: error instanceof Error ? error.message : 'Unknown error'
-      }), { 
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json'
-        } 
-      });
+      return new Response(
+        JSON.stringify({
+          error: 'Internal Server Error',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
   }
 };
