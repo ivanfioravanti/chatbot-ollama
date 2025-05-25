@@ -124,4 +124,3 @@ This project was modified to create **StylistBot**, an AI that evaluates fashion
 - 🛠 **API Logic**:
 - Updated `/api/chat` to include gender and occasion in the prompt
 - Uses Mistral model via Ollama backend
-- 
