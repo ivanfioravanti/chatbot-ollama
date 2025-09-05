@@ -78,7 +78,7 @@ export const PromptComponent = ({ prompt }: Props) => {
   return (
     <div className="relative flex items-center">
       <button
-        className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-sm transition-colors duration-200 hover:bg-[#343541]/90"
+        className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-sm transition-colors duration-200 hover:bg-blue-100 dark:hover:bg-gray-800/90"
         draggable="true"
         onClick={(e) => {
           e.stopPropagation();
@@ -95,7 +95,7 @@ export const PromptComponent = ({ prompt }: Props) => {
           <IconBulbFilled size={16} stroke={1.5} />
         </div>
 
-        <div className="relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all pr-4 text-left text-[12.5px] leading-3">
+        <div className="relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all pr-4 text-left text-[12.5px] leading-3 text-gray-800 dark:text-white">
           {prompt.name}
         </div>
       </button>

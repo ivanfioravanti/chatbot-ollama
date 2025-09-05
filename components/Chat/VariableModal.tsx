@@ -102,7 +102,7 @@ export const VariableModal: FC<Props> = ({
 
             <textarea
               ref={index === 0 ? nameInputRef : undefined}
-              className="mt-1 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
+              className="mt-1 w-full rounded-lg border border-neutral-300 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-[#1b2a4a] dark:bg-[#0f1d35] dark:text-neutral-100"
               style={{ resize: 'none' }}
               placeholder={`Enter a value for ${variable.key}...`}
               value={variable.value}

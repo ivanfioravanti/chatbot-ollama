@@ -31,11 +31,11 @@ const useApiService = () => {
     [fetchService],
   );
 
+
   return {
     getModels,
-    getModelDetails
+    getModelDetails,
   };
 };
 
 export default useApiService;
-

@@ -1,5 +1,6 @@
-import { IconCheck, IconClipboard, IconDownload } from '@tabler/icons-react';
+import { IconCheck, IconClipboard, IconDownload, IconListNumbers, IconTextWrap } from '@tabler/icons-react';
 import { FC, memo, useState } from 'react';
+import toast from 'react-hot-toast';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
@@ -18,6 +19,8 @@ interface Props {
 export const CodeBlock: FC<Props> = memo(({ language, value }) => {
   const { t } = useTranslation('markdown');
   const [isCopied, setIsCopied] = useState<Boolean>(false);
+  const [showLineNumbers, setShowLineNumbers] = useState<boolean>(false);
+  const [wrap, setWrap] = useState<boolean>(false);
 
   const copyToClipboard = () => {
     if (!navigator.clipboard || !navigator.clipboard.writeText) {
@@ -26,6 +29,7 @@ export const CodeBlock: FC<Props> = memo(({ language, value }) => {
 
     navigator.clipboard.writeText(value).then(() => {
       setIsCopied(true);
+      toast.success(t('Copied code') || 'Copied code');
 
       setTimeout(() => {
         setIsCopied(false);
@@ -66,6 +70,20 @@ export const CodeBlock: FC<Props> = memo(({ language, value }) => {
 
         <div className="flex items-center">
           <button
+            className="flex items-center rounded bg-none p-1 text-xs text-white"
+            title={showLineNumbers ? (t('Hide line numbers') || 'Hide line numbers') : (t('Show line numbers') || 'Show line numbers')}
+            onClick={() => setShowLineNumbers((v) => !v)}
+          >
+            <IconListNumbers size={18} />
+          </button>
+          <button
+            className="flex items-center rounded bg-none p-1 text-xs text-white"
+            title={wrap ? (t('Disable wrap') || 'Disable wrap') : (t('Enable wrap') || 'Enable wrap')}
+            onClick={() => setWrap((v) => !v)}
+          >
+            <IconTextWrap size={18} />
+          </button>
+          <button
             className="flex gap-1.5 items-center rounded bg-none p-1 text-xs text-white"
             onClick={copyToClipboard}
           >
@@ -85,6 +103,8 @@ export const CodeBlock: FC<Props> = memo(({ language, value }) => {
         language={language}
         style={oneDark}
         customStyle={{ margin: 0 }}
+        showLineNumbers={showLineNumbers}
+        wrapLongLines={wrap}
       >
         {value}
       </SyntaxHighlighter>

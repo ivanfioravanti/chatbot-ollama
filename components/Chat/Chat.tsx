@@ -1,4 +1,4 @@
-import { IconClearAll, IconSettings } from '@tabler/icons-react';
+import { IconClearAll, IconPlayerPause, IconPlayerPlay, IconSettings } from '@tabler/icons-react';
 import {
   MutableRefObject,
   memo,
@@ -55,6 +55,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
 
   const [currentMessage, setCurrentMessage] = useState<Message>();
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
+  const [autoScrollLocked, setAutoScrollLocked] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showScrollDownButton, setShowScrollDownButton] =
     useState<boolean>(false);
@@ -63,8 +64,76 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const buildPromptFromMessages = useCallback((messages: Message[]) => {
+    const lines: string[] = [];
+    for (const m of messages) {
+      const role = m.role === 'assistant' ? 'Assistant' : 'User';
+      const text = (m.content || '').trim();
+      if (text) lines.push(`${role}: ${text}`);
+      const attach = m?.file?.metadata?.contentText;
+      const fname = m?.file?.name;
+      if (attach && fname && m.role === 'user') {
+        lines.push(`[Attachment: ${fname}]\n${attach}`);
+      }
+    }
+    return lines.join('\n\n');
+  }, []);
+
+  const showErrorToast = useCallback(
+    (
+      title: string,
+      detail?: string,
+      onRetry?: () => void,
+    ) => {
+      toast.custom((t) => (
+        <div
+          className={`max-w-[540px] w-[92vw] md:w-[540px] rounded-lg border border-red-300 bg-white text-red-700 shadow-lg dark:border-red-800/40 dark:bg-[#2a2b32] dark:text-red-300 ${
+            t.visible ? 'animate-enter' : 'animate-leave'
+          }`}
+        >
+          <div className="px-4 py-3">
+            <div className="font-semibold mb-1">{title}</div>
+            {detail && (
+              <div className="text-sm opacity-80 break-words whitespace-pre-wrap">
+                {detail}
+              </div>
+            )}
+            <div className="mt-3 flex gap-2">
+              {onRetry && (
+                <button
+                  className="rounded-md bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+                  onClick={() => {
+                    toast.dismiss(t.id);
+                    onRetry();
+                  }}
+                >
+                  Retry
+                </button>
+              )}
+              <button
+                className="rounded-md border border-neutral-300 px-3 py-1 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+                onClick={() => toast.dismiss(t.id)}
+              >
+                Dismiss
+              </button>
+              {detail && typeof navigator !== 'undefined' && navigator.clipboard && (
+                <button
+                  className="ml-auto rounded-md border border-neutral-300 px-3 py-1 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+                  onClick={() => navigator.clipboard.writeText(detail)}
+                >
+                  Copy details
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      ), { duration: 8000 });
+    },
+    [],
+  );
+
   const handleSend = useCallback(
-    async (message: Message, deleteCount = 0 ) => {
+    async (message: Message, deleteCount = 0, imagesBase64?: string[]) => {
       if (selectedConversation) {
         let updatedConversation: Conversation;
         if (deleteCount) {
@@ -88,10 +157,13 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         });
         homeDispatch({ field: 'loading', value: true });
         homeDispatch({ field: 'messageIsStreaming', value: true });
+        // Build a stable transcript with roles and any user attachments inline
+        const visiblePrompt = buildPromptFromMessages(updatedConversation.messages);
         const chatBody: ChatBody = {
           model: updatedConversation.model.name,
           system: updatedConversation.prompt,
-          prompt: updatedConversation.messages.map(message => message.content).join(' '),
+          prompt: visiblePrompt,
+          images: imagesBase64 && imagesBase64.length ? imagesBase64 : undefined,
           options: { temperature: updatedConversation.temperature },
         };
         const endpoint = getEndpoint();
@@ -100,57 +172,120 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           ...chatBody,
         });
         const controller = new AbortController();
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          signal: controller.signal,
-          body,
-        });
-        if (!response.ok) {
-          homeDispatch({ field: 'loading', value: false });
-          homeDispatch({ field: 'messageIsStreaming', value: false });
-          toast.error(response.statusText);
-          return;
-        }
-        const data = response.body;
-        if (!data) {
-          homeDispatch({ field: 'loading', value: false });
-          homeDispatch({ field: 'messageIsStreaming', value: false });
-          return;
-        }
-        if (!false) {
-          if (updatedConversation.messages.length === 1) {
-            const { content } = message;
-            const customName =
-              content.length > 30 ? content.substring(0, 30) + '...' : content;
-            updatedConversation = {
-              ...updatedConversation,
-              name: customName,
-            };
+        let response: Response;
+        try {
+          response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            signal: controller.signal,
+            body,
+          });
+          if (!response.ok) {
+            homeDispatch({ field: 'loading', value: false });
+            homeDispatch({ field: 'messageIsStreaming', value: false });
+            let title = 'Request failed';
+            let detail: string | undefined;
+            try {
+              const err = await response.json();
+              title = err?.error || title;
+              detail = [err?.message, err?.suggestion].filter(Boolean).join('\n');
+            } catch {}
+            if (!navigator.onLine) {
+              detail = (detail ? detail + '\n' : '') + 'You appear to be offline.';
+            }
+            showErrorToast(title, detail, () => handleSend(message, 1));
+            return;
           }
-          homeDispatch({ field: 'loading', value: false });
-          const reader = data.getReader();
-          const decoder = new TextDecoder();
-          let done = false;
-          let isFirst = true;
-          let text = '';
-          while (!done) {
-          if (stopConversationRef.current === true) {
-            controller.abort();
-            done = true;
-            break;
+          const data = response.body;
+          if (!data) {
+            homeDispatch({ field: 'loading', value: false });
+            homeDispatch({ field: 'messageIsStreaming', value: false });
+            showErrorToast('Empty response', 'No data received from API.', () => handleSend(message, 1));
+            return;
           }
-          const { value, done: doneReading } = await reader.read();
-          done = doneReading;
-          const chunkValue = decoder.decode(value);
-          text += chunkValue;
-          if (isFirst) {
-            isFirst = false;
+          if (!false) {
+            if (updatedConversation.messages.length === 1) {
+              const { content } = message;
+              const customName =
+                content.length > 30 ? content.substring(0, 30) + '...' : content;
+              updatedConversation = {
+                ...updatedConversation,
+                name: customName,
+              };
+            }
+            homeDispatch({ field: 'loading', value: false });
+            const reader = data.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let isFirst = true;
+            let text = '';
+            while (!done) {
+              if (stopConversationRef.current === true) {
+                controller.abort();
+                done = true;
+                break;
+              }
+              const { value, done: doneReading } = await reader.read();
+              done = doneReading;
+              const chunkValue = decoder.decode(value);
+              text += chunkValue;
+              if (isFirst) {
+                isFirst = false;
+                const updatedMessages: Message[] = [
+                  ...updatedConversation.messages,
+                  { role: 'assistant', content: chunkValue },
+                ];
+                updatedConversation = {
+                  ...updatedConversation,
+                  messages: updatedMessages,
+                };
+                homeDispatch({
+                  field: 'selectedConversation',
+                  value: updatedConversation,
+                });
+              } else {
+                const updatedMessages: Message[] =
+                  updatedConversation.messages.map((message, index) => {
+                    if (index === updatedConversation.messages.length - 1) {
+                      return {
+                        ...message,
+                        content: text,
+                      };
+                    }
+                    return message;
+                  });
+                updatedConversation = {
+                  ...updatedConversation,
+                  messages: updatedMessages,
+                };
+                homeDispatch({
+                  field: 'selectedConversation',
+                  value: updatedConversation,
+                });
+              }
+            }
+            saveConversation(updatedConversation);
+            const updatedConversations: Conversation[] = conversations.map(
+              (conversation) => {
+                if (conversation.id === selectedConversation.id) {
+                  return updatedConversation;
+                }
+                return conversation;
+              },
+            );
+            if (updatedConversations.length === 0) {
+              updatedConversations.push(updatedConversation);
+            }
+            homeDispatch({ field: 'conversations', value: updatedConversations });
+            saveConversations(updatedConversations);
+            homeDispatch({ field: 'messageIsStreaming', value: false });
+          } else {
+            const { answer } = await response.json();
             const updatedMessages: Message[] = [
               ...updatedConversation.messages,
-              { role: 'assistant', content: chunkValue },
+              { role: 'assistant', content: answer },
             ];
             updatedConversation = {
               ...updatedConversation,
@@ -160,72 +295,36 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               field: 'selectedConversation',
               value: updatedConversation,
             });
-            } else {
-              const updatedMessages: Message[] =
-                updatedConversation.messages.map((message, index) => {
-                  if (index === updatedConversation.messages.length - 1) {
-                    return {
-                      ...message,
-                      content: text,
-                    };
-                  }
-                  return message;
-                });
-              updatedConversation = {
-                ...updatedConversation,
-                messages: updatedMessages,
-              };
-              homeDispatch({
-                field: 'selectedConversation',
-                value: updatedConversation,
-              });
+            saveConversation(updatedConversation);
+            const updatedConversations: Conversation[] = conversations.map(
+              (conversation) => {
+                if (conversation.id === selectedConversation.id) {
+                  return updatedConversation;
+                }
+                return conversation;
+              },
+            );
+            if (updatedConversations.length === 0) {
+              updatedConversations.push(updatedConversation);
             }
-          } 
-          saveConversation(updatedConversation);
-          const updatedConversations: Conversation[] = conversations.map(
-            (conversation) => {
-              if (conversation.id === selectedConversation.id) {
-                return updatedConversation;
-              }
-              return conversation;
-            },
-          );
-          if (updatedConversations.length === 0) {
-            updatedConversations.push(updatedConversation);
+            homeDispatch({ field: 'conversations', value: updatedConversations });
+            saveConversations(updatedConversations);
+            homeDispatch({ field: 'loading', value: false });
+            homeDispatch({ field: 'messageIsStreaming', value: false });
           }
-          homeDispatch({ field: 'conversations', value: updatedConversations });
-          saveConversations(updatedConversations);
-          homeDispatch({ field: 'messageIsStreaming', value: false });
-        } else {
-          const { answer } = await response.json();
-          const updatedMessages: Message[] = [
-            ...updatedConversation.messages,
-            { role: 'assistant', content: answer },
-          ];
-          updatedConversation = {
-            ...updatedConversation,
-            messages: updatedMessages,
-          };
-          homeDispatch({
-            field: 'selectedConversation',
-            value: updateConversation,
-          });
-          saveConversation(updatedConversation);
-          const updatedConversations: Conversation[] = conversations.map(
-            (conversation) => {
-              if (conversation.id === selectedConversation.id) {
-                return updatedConversation;
-              }
-              return conversation;
-            },
-          );
-          if (updatedConversations.length === 0) {
-            updatedConversations.push(updatedConversation);
-          }
-          homeDispatch({ field: 'conversations', value: updatedConversations });
-          saveConversations(updatedConversations);
+        } catch (err) {
           homeDispatch({ field: 'loading', value: false });
           homeDispatch({ field: 'messageIsStreaming', value: false });
+          if ((err as any)?.name === 'AbortError') {
+            // Silently ignore manual aborts
+            return;
+          }
+          const msg = (err as any)?.message || 'Unexpected error';
+          const detail = !navigator.onLine
+            ? `${msg}\nYou appear to be offline.`
+            : msg;
+          showErrorToast('Request error', detail, () => handleSend(message, 1));
+          return;
         }
       }
     },
@@ -234,6 +333,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       selectedConversation,
       stopConversationRef,
       homeDispatch,
+      showErrorToast,
     ],
   );
 
@@ -254,7 +354,9 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         setAutoScrollEnabled(false);
         setShowScrollDownButton(true);
       } else {
-        setAutoScrollEnabled(true);
+        if (!autoScrollLocked) {
+          setAutoScrollEnabled(true);
+        }
         setShowScrollDownButton(false);
       }
     }
@@ -281,6 +383,16 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         value: [],
       });
     }
+  };
+
+  const toggleAutoScroll = () => {
+    setAutoScrollLocked((locked) => {
+      const next = !locked;
+      if (next) {
+        setAutoScrollEnabled(false);
+      }
+      return next;
+    });
   };
 
   const scrollDown = () => {
@@ -323,7 +435,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   }, [messagesEndRef]);
 
   return (
-    <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
+    <div className="relative flex-1 overflow-hidden bg-gradient-to-b from-blue-50 to-blue-100 dark:from-[#0e1728] dark:to-[#0b1220] transition-colors duration-300">
         <>
           <div
             className="max-h-full overflow-x-hidden"
@@ -332,91 +444,129 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           >
             {selectedConversation?.messages.length === 0 ? (
               <>
-                <div className="mx-auto flex flex-col space-y-5 md:space-y-10 px-3 pt-5 md:pt-12 sm:max-w-[600px]">
-                  <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
-                    {models.length === 0 ? (
-                      <div>
-                        <Spinner size="16px" className="mx-auto" />
-                      </div>
-                    ) : (
-                      'Chatbot Ollama'
-                    )}
+                <div className="mx-auto flex flex-col space-y-6 md:space-y-12 px-4 pt-6 md:pt-16 sm:max-w-[600px]">
+                  <div className="text-center">
+                    <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary-600 to-accent-purple bg-clip-text text-transparent mb-4 animate-fade-in">
+                      {models.length === 0 ? (
+                        <div className="flex items-center justify-center">
+                          <Spinner size="20px" className="mr-3" />
+                          <span className="text-gray-600 dark:text-gray-300">Loading models...</span>
+                        </div>
+                      ) : (
+                        'Chatbot Ollama'
+                      )}
+                    </h1>
+                    <p className="text-gray-600 dark:text-gray-400 text-lg animate-slide-up">
+                      Your AI assistant powered by local models
+                    </p>
                   </div>
 
                   {models.length > 0 && (
-                    <div className="flex h-full flex-col space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-600">
-                      <ModelSelect />
+                    <div className="card p-6 space-y-6 animate-scale-in">
+                      <div className="space-y-2">
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Configuration</h2>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">Customize your AI experience</p>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <ModelSelect />
 
-                      <SystemPrompt
-                        conversation={selectedConversation}
-                        prompts={prompts}
-                        onChangePrompt={(prompt) =>
-                          handleUpdateConversation(selectedConversation, {
-                            key: 'prompt',
-                            value: prompt,
-                          })
-                        }
-                      />
+                        <SystemPrompt
+                          conversation={selectedConversation}
+                          prompts={prompts}
+                          onChangePrompt={(prompt) =>
+                            handleUpdateConversation(selectedConversation, {
+                              key: 'prompt',
+                              value: prompt,
+                            })
+                          }
+                        />
 
-                      <TemperatureSlider
-                        label={t('Temperature')}
-                        onChangeTemperature={(temperature) =>
-                          handleUpdateConversation(selectedConversation, {
-                            key: 'temperature',
-                            value: temperature,
-                          })
-                        }
-                      />
+                        <TemperatureSlider
+                          label={t('Temperature')}
+                          onChangeTemperature={(temperature) =>
+                            handleUpdateConversation(selectedConversation, {
+                              key: 'temperature',
+                              value: temperature,
+                            })
+                          }
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
               </>
             ) : (
               <>
-                <div className="sticky top-0 z-10 flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                  {t('Model')}: {selectedConversation?.model.name} | {t('Temp')}
-                  : {selectedConversation?.temperature} |
-                  <button
-                    className="ml-2 cursor-pointer hover:opacity-50"
-                    onClick={handleSettings}
-                  >
-                    <IconSettings size={18} />
-                  </button>
-                  <button
-                    className="ml-2 cursor-pointer hover:opacity-50"
-                    onClick={onClearAll}
-                  >
-                    <IconClearAll size={18} />
-                  </button>
+                <div className="sticky top-0 z-10 flex justify-center items-center gap-3 bg-white/80 dark:bg-[#0e1728]/80 backdrop-blur-lg border-b border-gray-200 dark:border-[#1b2a4a] py-3 px-4 text-sm text-gray-600 dark:text-gray-300 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{t('Model')}:</span>
+                    <span className="text-primary-600 dark:text-primary-400 font-semibold">{selectedConversation?.model.name}</span>
+                  </div>
+                  <div className="w-1 h-1 bg-gray-400 dark:bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{t('Temp')}:</span>
+                    <span className="text-gray-700 dark:text-gray-300 font-semibold">{selectedConversation?.temperature}</span>
+                  </div>
+                  <div className="flex items-center gap-1 ml-4">
+                    <button
+                      className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-200 hover:scale-105"
+                      onClick={handleSettings}
+                      title={t('Settings')}
+                    >
+                      <IconSettings size={16} />
+                    </button>
+                    <button
+                      className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-200 hover:scale-105"
+                      onClick={onClearAll}
+                      title={t('Clear all')}
+                    >
+                      <IconClearAll size={16} />
+                    </button>
+                    <button
+                      className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-200 hover:scale-105"
+                      onClick={toggleAutoScroll}
+                      title={autoScrollLocked ? (t('Enable auto-scroll') || 'Enable auto-scroll') : (t('Disable auto-scroll') || 'Disable auto-scroll')}
+                    >
+                      {autoScrollLocked ? (
+                        <IconPlayerPlay size={16} />
+                      ) : (
+                        <IconPlayerPause size={16} />
+                      )}
+                    </button>
+                  </div>
                 </div>
                 {showSettings && (
-                  <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
-                    <div className="flex h-full flex-col space-y-4 border-b border-neutral-200 p-4 dark:border-neutral-600 md:rounded-lg md:border">
+                  <div className="flex flex-col space-y-6 md:mx-auto md:max-w-xl md:gap-6 md:py-4 md:pt-8 lg:max-w-2xl lg:px-0 xl:max-w-3xl animate-slide-down">
+                    <div className="card p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Model Settings</h3>
                       <ModelSelect />
                     </div>
                   </div>
                 )}
 
-                {selectedConversation?.messages.map((message, index) => (
-                  <MemoizedChatMessage
-                    key={index}
-                    message={message}
-                    messageIndex={index}
-                    onEdit={(editedMessage) => {
-                      setCurrentMessage(editedMessage);
-                      // discard edited message and the ones that come after then resend
-                      handleSend(
-                        editedMessage,
-                        selectedConversation?.messages.length - index,
-                      );
-                    }}
-                  />
-                ))}
+                <div className="space-y-4 py-4">
+                  {selectedConversation?.messages.map((message, index) => (
+                    <MemoizedChatMessage
+                      key={index}
+                      message={message}
+                      messageIndex={index}
+                      onEdit={(editedMessage) => {
+                        setCurrentMessage(editedMessage);
+                        // discard edited message and the ones that come after then resend
+                        handleSend(
+                          editedMessage,
+                          selectedConversation?.messages.length - index,
+                        );
+                      }}
+                    />
+                  ))}
+                </div>
 
                 {loading && <ChatLoader />}
 
                 <div
-                  className="h-[162px] bg-white dark:bg-[#343541]"
+                  className="h-[180px] bg-transparent"
                   ref={messagesEndRef}
                 />
               </>
@@ -426,9 +576,9 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           <ChatInput
             stopConversationRef={stopConversationRef}
             textareaRef={textareaRef}
-            onSend={(message) => {
+            onSend={(message, imagesBase64) => {
               setCurrentMessage(message);
-              handleSend(message, 0);
+              handleSend(message, 0, imagesBase64);
             }}
             onScrollDownClick={handleScrollDown}
             onRegenerate={() => {
