@@ -138,14 +138,14 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
       }`}
       style={{ overflowWrap: 'anywhere' }}
     >
-      <div className="relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
+      <div className="relative m-auto flex p-3 text-base md:max-w-2xl md:gap-4 md:py-4 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
         <div className="min-w-[40px] text-right">
           {message.role === 'assistant' ? (
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-accent-purple text-white shadow-card hover:shadow-hover transition-all duration-200 group-hover:scale-105">
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-accent-purple text-white shadow-card hover:shadow-hover transition-all duration-200 group-hover:scale-105">
               <IconRobot size={20} stroke={2} />
             </div>
           ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-green to-accent-blue text-white shadow-card hover:shadow-hover transition-all duration-200 group-hover:scale-105">
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-green to-accent-blue text-white shadow-card hover:shadow-hover transition-all duration-200 group-hover:scale-105">
               <IconUser size={20} stroke={2} />
             </div>
           )}
@@ -158,7 +158,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
                 <div className="flex w-full flex-col">
                   <textarea
                     ref={textareaRef}
-                    className="w-full resize-none whitespace-pre-wrap border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 p-4 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
+                    className="w-full resize-none whitespace-pre-wrap border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 p-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
                     value={messageContent}
                     onChange={handleInputChange}
                     onKeyDown={handlePressEnter}
@@ -173,7 +173,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
                     }}
                   />
 
-                  <div className="mt-6 flex justify-center space-x-3">
+                  <div className="mt-4 flex justify-center space-x-3">
                     <button
                       className="px-6 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition-all duration-200 shadow-card hover:shadow-hover disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={handleEditMessage}

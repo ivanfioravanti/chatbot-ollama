@@ -523,7 +523,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               </>
             ) : (
               <>
-                <div className="sticky top-0 z-10 flex justify-center items-center gap-3 bg-white/80 dark:bg-[#0e1728]/80 backdrop-blur-lg border-b border-gray-200 dark:border-[#1b2a4a] py-3 px-4 text-sm text-gray-600 dark:text-gray-300 shadow-sm">
+                <div className="sticky top-0 z-10 flex justify-center items-center gap-3 bg-white/80 dark:bg-[#0e1728]/80 backdrop-blur-lg border-b border-gray-200 dark:border-[#1b2a4a] py-2 px-3 text-sm text-gray-600 dark:text-gray-300 shadow-sm">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{t('Model')}:</span>
                     <span className="text-primary-600 dark:text-primary-400 font-semibold">{selectedConversation?.model.name}</span>
@@ -577,7 +577,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                   </div>
                 )}
 
-                <div className="space-y-4 py-4">
+                <div className="space-y-3 py-2">
                   {selectedConversation?.messages.map((message, index) => (
                     <MemoizedChatMessage
                       key={index}

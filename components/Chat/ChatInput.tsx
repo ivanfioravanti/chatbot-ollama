@@ -361,7 +361,7 @@ export const ChatInput = ({
   }, []);
 
   return (
-    <div className="absolute bottom-0 left-0 w-full border-transparent bg-gradient-to-b from-transparent via-white/90 to-white/90 pt-6 dark:border-white/20 dark:via-[#0e1728]/90 dark:to-[#0e1728]/90 md:pt-2 backdrop-blur-sm">
+    <div className="absolute bottom-0 left-0 w-full border-transparent bg-gradient-to-b from-transparent via-white/90 to-white/90 pt-3 dark:border-white/20 dark:via-[#0e1728]/90 dark:to-[#0e1728]/90 md:pt-2 backdrop-blur-sm">
       <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
         {messageIsStreaming && (
           <button
@@ -470,7 +470,7 @@ export const ChatInput = ({
           )}
 
           {showFileUpload && (
-            <div className="absolute bottom-12 w-full px-1">
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[min(92vw,720px)] px-3 z-40">
               <FileUpload
                 onFileSelect={handleFileSelect}
                 onFileRemove={() => setSelectedFile(null)}
@@ -488,7 +488,7 @@ export const ChatInput = ({
           )}
 
           {showImageUpload && (
-            <div className="absolute bottom-24 w-full px-1">
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[min(92vw,720px)] px-3 z-40">
               <FileUpload
                 onFileSelect={async (file) => {
                   // basic image validation

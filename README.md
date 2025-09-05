@@ -6,7 +6,30 @@ Chatbot Ollama is an open source chat UI for Ollama.
 
 This project is based on [chatbot-ui](https://github.com/mckaywrigley/chatbot-ui) by [Mckay Wrigley](https://github.com/mckaywrigley).
 
-![Chatbot Ollama](./public/screenshots/screenshot-2023-10-02.png)
+![Chatbot Ollama – Dark](./public/screenshots/screenshot-2025-09-dark.png)
+
+![Chatbot Ollama – Light](./public/screenshots/screenshot-2025-09-light.png)
+
+> If the image does not render, place the new screenshot at `public/screenshots/screenshot-2025-09-dark.png` (light version optional at `public/screenshots/screenshot-2025-09-light.png`).
+
+## Highlights (new)
+
+- Blue theme polished for light and dark modes with consistent sidebars, headers, and overlays.
+- Document upload (PDF, TXT, MD):
+  - PDFs parsed server‑side for reliability; text/markdown read client‑side.
+  - The full (truncated) content is attached invisibly to the model prompt — the UI stays clean.
+  - 50 MB size cap, 100 page cap (PDF), 50k characters per attachment.
+- Image upload: attach images and send them to vision‑capable models (base64). Non‑vision models simply ignore images.
+- Code blocks: copy button, language label, optional line numbers, line‑wrap toggle, and “download as file”.
+- Streaming & control: Stop Generation button, auto‑scroll toggle (pause/resume when you scroll up).
+- Keyboard shortcuts:
+  - Enter to send, Shift+Enter for newline
+  - Esc to blur input
+  - Ctrl/Cmd+L clears the composer
+  - Arrow Up recalls the last user message
+- Error handling: a consistent toast shows details, Copy details, and Retry.
+- Conversation tools: Copy messages button copies the whole visible conversation (with role labels and any attached content).
+- Sidebar UX: search inputs are theme‑aware, prompts list matches chat list styling, improved hover/selection.
 
 ## Updates
 
@@ -14,9 +37,8 @@ Chatbot Ollama will be updated over time.
 
 ### Next up
 
-- [ ] pull a model
-- [ ] delete a model
-- [ ] show model information
+- [ ] Model management (pull/delete)
+- [ ] Model info/details dialog
 
 ## Docker
 
@@ -72,6 +94,12 @@ npm run dev
 ### 6. Use It
 
 You should be able to start chatting.
+
+### Tips
+
+- Attach documents via the paper icon in the composer — the content is included for the model invisibly so the chat stays uncluttered.
+- Attach an image with the camera icon — vision models will “see” it; others will ignore it.
+- Use the clipboard icon in the sticky header to copy the current conversation.
 
 ## Configuration
 

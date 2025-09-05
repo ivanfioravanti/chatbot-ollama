@@ -98,10 +98,10 @@ export const FileUpload: FC<Props> = ({
     <div className="relative">
       {!selectedFile ? (
         <div
-          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+          className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors shadow-card ${
             isDragging
               ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-              : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500'
+              : 'border-blue-200 bg-white dark:border-[#1b2a4a] dark:bg-[#0f1d35]'
           }`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}

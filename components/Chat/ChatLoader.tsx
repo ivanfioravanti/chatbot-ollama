@@ -9,7 +9,7 @@ export const ChatLoader: FC<Props> = () => {
       className="group border-b border-gray-200 bg-gray-50/90 text-gray-800 dark:border-[#1b2a4a] dark:bg-[#0f1d35]/95 dark:text-gray-100"
       style={{ overflowWrap: 'anywhere' }}
     >
-      <div className="m-auto flex gap-4 p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
+      <div className="m-auto flex gap-3 p-3 text-base md:max-w-2xl md:gap-4 md:py-4 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
         <div className="min-w-[40px] items-end">
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-r from-purple-500/70 to-blue-500/70 text-white">
             <IconRobot size={20} stroke={2.5} />
