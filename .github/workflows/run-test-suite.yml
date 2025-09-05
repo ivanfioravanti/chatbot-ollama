@@ -11,7 +11,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: node:16
+      image: node:20
 
     steps:
       - name: Checkout code
