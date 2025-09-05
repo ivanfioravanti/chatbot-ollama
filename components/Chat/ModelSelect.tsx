@@ -93,7 +93,7 @@ export const ModelSelect = () => {
             <option
               key={model.name}
               value={model.name}
-              className="dark:bg-[#343541] dark:text-white"
+              className="dark:bg-[#0f1d35] dark:text-white"
             >
               {model.name === defaultModelId
                 ? `Default (${model.name})`

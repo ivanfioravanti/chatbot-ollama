@@ -19,8 +19,9 @@ export class OllamaError extends Error {
 export const OllamaStream = async (
   model: string,
   systemPrompt: string,
-  temperature : number,
+  temperature: number,
   prompt: string,
+  images?: string[],
 ) => {
   let url = `${OLLAMA_HOST}/api/generate`;
   
@@ -41,6 +42,7 @@ export const OllamaStream = async (
         model: model,
         prompt: prompt,
         system: systemPrompt,
+        ...(images && images.length ? { images } : {}),
         options: {
           temperature: temperature,
         },

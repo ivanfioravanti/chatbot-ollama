@@ -10,7 +10,7 @@ export const config = {
 
 const handler = async (req: Request): Promise<Response> => {
   try {
-    const { model, system, options, prompt } = (await req.json()) as ChatBody;
+    const { model, system, options, prompt, images } = (await req.json()) as ChatBody;
 
 
     let promptToSend = system;
@@ -23,7 +23,7 @@ const handler = async (req: Request): Promise<Response> => {
       temperatureToUse = DEFAULT_TEMPERATURE;
     }
 
-    const stream = await OllamaStream (model, promptToSend, temperatureToUse, prompt);
+    const stream = await OllamaStream(model, promptToSend, temperatureToUse, prompt, images);
 
     return new Response(stream);
   } catch (error) {
