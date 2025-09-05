@@ -1,4 +1,4 @@
-import { IconClearAll, IconPlayerPause, IconPlayerPlay, IconSettings } from '@tabler/icons-react';
+import { IconClearAll, IconClipboard, IconPlayerPause, IconPlayerPlay, IconSettings } from '@tabler/icons-react';
 import {
   MutableRefObject,
   memo,
@@ -78,6 +78,31 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
     }
     return lines.join('\n\n');
   }, []);
+
+  const copyConversation = useCallback(async () => {
+    try {
+      if (!selectedConversation) return;
+      const text = buildPromptFromMessages(selectedConversation.messages);
+      if (!text) {
+        toast.success(t('Nothing to copy') || 'Nothing to copy');
+        return;
+      }
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        toast.success(t('Copied conversation') || 'Copied conversation');
+      } else {
+        const tmp = document.createElement('textarea');
+        tmp.value = text;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tmp);
+        toast.success(t('Copied conversation') || 'Copied conversation');
+      }
+    } catch (e) {
+      toast.error(t('Failed to copy') || 'Failed to copy');
+    }
+  }, [selectedConversation, buildPromptFromMessages, t]);
 
   const showErrorToast = useCallback(
     (
@@ -438,7 +463,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
     <div className="relative flex-1 overflow-hidden bg-gradient-to-b from-blue-50 to-blue-100 dark:from-[#0e1728] dark:to-[#0b1220] transition-colors duration-300">
         <>
           <div
-            className="max-h-full overflow-x-hidden"
+            className="max-h-full overflow-x-hidden select-text"
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
@@ -515,6 +540,13 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                       title={t('Settings')}
                     >
                       <IconSettings size={16} />
+                    </button>
+                    <button
+                      className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-200 hover:scale-105"
+                      onClick={copyConversation}
+                      title={t('Copy messages') || 'Copy messages'}
+                    >
+                      <IconClipboard size={16} />
                     </button>
                     <button
                       className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-200 hover:scale-105"
