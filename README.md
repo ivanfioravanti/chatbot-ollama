@@ -85,6 +85,18 @@ ollama serve
 
 or via the [desktop client](https://ollama.ai/download)
 
+#### Using with llmman
+
+[llmman](https://github.com/llmmanorg/llmman) is a local model runner that serves the Ollama API (alongside OpenAI- and Anthropic-compatible ones) on port 17434, so it works as a drop-in backend for Chatbot Ollama:
+
+```bash
+llmman serve
+llmman pull gemma4
+LLMMAN_HOST=http://127.0.0.1:17434 npm run dev
+```
+
+`LLMMAN_HOST` is used when `OLLAMA_HOST` is not set. Either variable can also point Chatbot Ollama at a remote instance.
+
 ### 5. Run App
 
 ```bash
