@@ -101,6 +101,28 @@ You should be able to start chatting.
 - Attach an image with the camera icon — vision models will “see” it; others will ignore it.
 - Use the clipboard icon in the sticky header to copy the current conversation.
 
+## Web search
+
+Enable **Search the web with Parallel (sends your message)** in the composer to
+add current web sources to your Ollama answers. [Parallel Search MCP](https://docs.parallel.ai/integrations/mcp/search-mcp)
+is the built-in search provider, using Fast mode with no account or API key.
+Send a question to search, or a single `https://` or `http://` URL to read that
+page. Ollama receives the returned excerpts and source URLs before generating
+its answer; no tool-calling model is needed.
+
+Web search starts disabled and the choice is saved per conversation. Enabling
+it sends the latest typed message or URL to Parallel, along with a random
+conversation identifier. It does not send your chat history, system prompt,
+document attachments or images. Document and image uploads skip web search.
+Disable the checkbox to keep subsequent messages local. Clearing messages starts
+a new search identity. Stop Generating cancels a pending search as well as generation.
+
+Anonymous search is intended for light use and has service rate limits. Search
+errors are shown in the existing error toast; use Retry or disable web search
+to continue locally. Requests time out after 20 seconds. Source content is
+untrusted reference material, and citations depend on the local model, so check
+linked sources for important claims.
+
 ## Configuration
 
 When deploying the application, the following environment variables can be set:

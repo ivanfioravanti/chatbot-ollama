@@ -28,11 +28,13 @@ import HomeContext from '@/pages/api/home/home.context';
 import { PromptList } from './PromptList';
 import { VariableModal } from './VariableModal';
 import { FileUpload } from '@/components/FileUpload/FileUpload';
+import { configureWebSearch } from '@/utils/app/webSearch';
 // Image upload is always visible; no model capability gating
 
 interface Props {
   onSend: (message: Message, imagesBase64?: string[]) => void;
   onRegenerate: () => void;
+  onStop: () => void;
   onScrollDownClick: () => void;
   stopConversationRef: MutableRefObject<boolean>;
   textareaRef: MutableRefObject<HTMLTextAreaElement | null>;
@@ -42,6 +44,7 @@ interface Props {
 export const ChatInput = ({
   onSend,
   onRegenerate,
+  onStop,
   onScrollDownClick,
   stopConversationRef,
   textareaRef,
@@ -53,6 +56,7 @@ export const ChatInput = ({
     state: { selectedConversation, messageIsStreaming, prompts },
 
     dispatch: homeDispatch,
+    handleUpdateConversation,
   } = useContext(HomeContext);
 
   const [content, setContent] = useState<string>();
@@ -101,6 +105,7 @@ export const ChatInput = ({
   };
 
   const handleStopConversation = () => {
+    onStop();
     stopConversationRef.current = true;
     setTimeout(() => {
       stopConversationRef.current = false;
@@ -288,11 +293,11 @@ export const ChatInput = ({
   };
 
   const updatePromptListVisibility = useCallback((text: string) => {
-    const match = text.match(/\/\w*$/);
+    const match = text.match(/(?:^|\s)\/(\w*)$/);
 
     if (match) {
       setShowPromptList(true);
-      setPromptInputValue(match[0].slice(1));
+      setPromptInputValue(match[1]);
     } else {
       setShowPromptList(false);
       setPromptInputValue('');
@@ -366,6 +371,7 @@ export const ChatInput = ({
         {messageIsStreaming && (
           <button
             className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded-xl bg-white dark:bg-gray-800 py-3 px-6 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-card hover:shadow-hover border border-gray-200 dark:border-gray-700 backdrop-blur-sm animate-fade-in md:mb-0 md:mt-2"
+            onClick={handleStopConversation}
           >
             <IconPlayerStop size={16} stroke={2} /> {t('Stop Generating')}
           </button>
@@ -411,6 +417,27 @@ export const ChatInput = ({
             onChange={handleChange}
             onKeyDown={handleKeyDown}
           />
+
+          {selectedConversation && (
+            <label className="flex items-center gap-2 px-4 pb-3 text-xs text-gray-600 dark:text-gray-300">
+              <input
+                type="checkbox"
+                checked={selectedConversation.webSearchEnabled === true}
+                disabled={messageIsStreaming}
+                onChange={(event) => {
+                  const configured = configureWebSearch(
+                    selectedConversation,
+                    event.target.checked,
+                  );
+                  handleUpdateConversation(configured, {
+                    key: 'webSearchEnabled',
+                    value: configured.webSearchEnabled,
+                  });
+                }}
+              />
+              {t('Search the web with Parallel (sends your message)')}
+            </label>
+          )}
 
           <button
             className="absolute right-3 top-3 rounded-xl p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
@@ -507,7 +534,7 @@ export const ChatInput = ({
                     const result = reader.result as string;
                     const base64 = result.split(',')[1] || result;
                     const text = content && content.trim().length > 0 ? content : (t('Describe the image') || 'Describe the image');
-                    onSend({ role: 'user', content: text }, [base64]);
+                    onSend({ role: 'user', content: text, webSearchExcluded: true }, [base64]);
                     setContent('');
                     toast.success(t('Image attached') || 'Image attached');
                     setShowImageUpload(false);

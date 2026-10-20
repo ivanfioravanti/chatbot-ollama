@@ -2,6 +2,7 @@ import { Conversation } from '@/types/chat';
 import { OllamaModelID, OllamaModels } from '@/types/ollama';
 
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from './const';
+import { configureWebSearch } from './webSearch';
 
 export const cleanSelectedConversation = (conversation: Conversation) => {
   // added model for each conversation (3/20/23)
@@ -49,7 +50,9 @@ export const cleanSelectedConversation = (conversation: Conversation) => {
     };
   }
 
-  return updatedConversation;
+  return updatedConversation.webSearchEnabled === true
+    ? configureWebSearch(updatedConversation, true)
+    : updatedConversation;
 };
 
 export const cleanConversationHistory = (history: any[]): Conversation[] => {
@@ -86,7 +89,11 @@ export const cleanConversationHistory = (history: any[]): Conversation[] => {
         conversation.messages = [];
       }
 
-      acc.push(conversation);
+      acc.push(
+        conversation.webSearchEnabled === true
+          ? configureWebSearch(conversation, true)
+          : conversation,
+      );
       return acc;
     } catch (error) {
       console.warn(

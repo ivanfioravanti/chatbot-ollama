@@ -22,11 +22,15 @@ export const OllamaStream = async (
   temperature: number,
   prompt: string,
   images?: string[],
+  signal?: AbortSignal,
 ) => {
   let url = `${OLLAMA_HOST}/api/generate`;
   
   // Create an AbortController with a long timeout
   const controller = new AbortController();
+  const abort = () => controller.abort();
+  signal?.addEventListener('abort', abort, { once: true });
+  if (signal?.aborted) abort();
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_DURATION);
   
   try {
@@ -79,12 +83,15 @@ export const OllamaStream = async (
           controller.close();
         } catch (e) {
           controller.error(e);
+        } finally {
+          signal?.removeEventListener('abort', abort);
         }
       },
     });
     
     return responseStream;
   } catch (error) {
+    signal?.removeEventListener('abort', abort);
     // Clear the timeout if there was an error
     clearTimeout(timeoutId);
     
